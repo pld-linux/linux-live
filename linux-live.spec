@@ -1,7 +1,7 @@
 Summary:	Linux Live scripts
 Name:		linux-live
 Version:	5.4.4
-Release:	0.2
+Release:	0.3
 License:	GPL
 Group:		Applications
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -26,7 +26,8 @@ these scripts to build your custom Live Linux.
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_libdir},%{_bindir}}
-install tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
+# don't remove -m644 here
+install -m644 tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
 install tools/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo,uselivemod} $RPM_BUILD_ROOT%{_bindir}
 
 %clean
