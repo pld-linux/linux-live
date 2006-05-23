@@ -1,4 +1,5 @@
 Summary:	Linux Live scripts
+Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.4.4
 Release:	0.4
@@ -19,6 +20,13 @@ LiveCD from every Linux distribution. Just install your favourite
 distro, remove all unnecessary files (for example man pages and all
 other files which are not important for you) and then download and run
 these scripts to build your custom Live Linux.
+
+%description -l pl
+Linux Live to zestaw skryptów pow³oki pozwalaj±cych tworzyæ w³asne
+LiveCD z ka¿dej dystrybucji Linuksa. Wystarczy zainstalowaæ ulubion±
+dystrybucjê, usun±æ wszystkie niepotrzebne pliki (na przyk³ad strony
+manuala i wszystkie inne nieistotne dla nas pliki), a nastêpnie
+¶ci±gn±æ i uruchomiæ te skrypty, aby stworzyæ w³asnego Live Linuksa.
 
 %prep
 %setup -q
