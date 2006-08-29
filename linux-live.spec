@@ -1,12 +1,12 @@
 Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
-Version:	5.4.7
+Version:	5.5.0
 Release:	1
 License:	GPL
 Group:		Applications
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
-# Source0-md5:	5c1c2c7ea53c74a009733aec9d56ecba
+# Source0-md5:	6a59f1ecf30780f8b3facd5dfcb01f13
 URL:		http://www.linux-live.org/
 Requires:	squashfs
 BuildArch:	noarch
