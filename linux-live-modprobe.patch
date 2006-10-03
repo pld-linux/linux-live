@@ -1,0 +1,66 @@
+--- _broken-linux-live-5.5.0/initrd/initrd_create	2006-09-26 17:45:45.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-09-27 15:27:17.000000000 +0300
+@@ -109,7 +109,22 @@
+ ln -s busybox $INITRD_TREE/bin/cat
+ ln -s busybox $INITRD_TREE/bin/grep
+ ln -s busybox $INITRD_TREE/bin/sleep
++cp -a /bin/mawk $INITRD_TREE/bin/awk
+ ln -s bin $INITRD_TREE/sbin
++mkdir -p $INITRD_TREE/usr/share
++cp -a /usr/bin/pcidev $INITRD_TREE/bin
++cp -a /usr/share/pci-database $INITRD_TREE/usr/share
++rm -f $INITRD_TREE/lib/*
++rcopy /lib/ld-linux.so.2 $INITRD_TREE
++rcopy /lib/libc.so.6 $INITRD_TREE
++rcopy /lib/libblkid.so.1 $INITRD_TREE
++rcopy /lib/libuuid.so.1 $INITRD_TREE
++rcopy /lib/libz.so.1 $INITRD_TREE
++rcopy /lib/libm.so.6 $INITRD_TREE
++rcopy /lib/libdevmapper.so.1.02 $INITRD_TREE
++rcopy /lib/libselinux.so.1 $INITRD_TREE
++rcopy /lib/libsepol.so.1 $INITRD_TREE
++rcopy /lib/libdl.so.2 $INITRD_TREE
+ 
+ LMK="lib/modules/$KERNEL"
+ 
+--- _broken-linux-live-5.5.0/initrd/linuxrc	2006-09-26 18:37:04.000000000 +0300
++++ linux-live-5.5.0/initrd/linuxrc	2006-09-28 01:19:28.000000000 +0300
+@@ -157,5 +157,8 @@
+ fstab_update $UNION
+ 
++echolog "creating /etc/modprobe.conf"
++modprobe_update $UNION
++
+ # More likely these directories aren't there.
+ # Even if they are, this won't hurt.
+ # Even if they are, this won't hurt.
+--- _broken-linux-live-5.5.0/tools/liblinuxlive	2006-09-26 17:18:28.000000000 +0300
++++ linux-live-5.5.0/tools/liblinuxlive	2006-09-28 03:14:39.000000000 +0300
+@@ -367,6 +367,13 @@
+    list_partition_devices
+ }
+ 
++# List all network drivers
++#
++list_network_drivers()
++{
++	pcidev /m net
++}
++
+ # Find file-path on given device
+ # Mounts the device in $1 and returns path if found,
+ # else unmounts and exits
+@@ -561,0 +569,13 @@
++
++# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
++# $1 = root directory (union)
++#
++modprobe_update()
++{
++	i=0
++	> $1/etc/modprobe.conf
++	for drv in $(list_network_drivers); do
++		echo "alias eth$i $drv" >> $1/etc/modprobe.conf
++		i=$((i+1))
++	done
++}

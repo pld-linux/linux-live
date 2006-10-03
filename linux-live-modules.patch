@@ -1,0 +1,182 @@
+--- r/linux-live-5.5.0/config	2006-10-02 20:19:58.000000000 +0300
++++ linux-live-5.5.0/config	2006-09-29 15:30:28.000000000 +0300
+@@ -24,12 +24,21 @@
+ if [ ! -d $initrddir ]; then
+ 	echo >&2 "Creating $initrd dir"
+ 	mkdir -p $initrddir
+-	cp -af $ROOT/lib/modules/$KERNEL/kernel/fs/squashfs/squashfs.ko* $initrddir
+-	if [ -f $ROOT/lib/modules/$KERNEL/kernel/fs/unionfs.ko* ]; then
+-		cp -af $ROOT/lib/modules/$KERNEL/kernel/fs/unionfs.ko* $initrddir
+-	else
+-		cp -af $ROOT/lib/modules/$KERNEL/kernel/fs/unionfs/unionfs.ko* $initrddir
+-	fi
++	for mod in \
++		drivers/cdrom/cdrom \
++		drivers/ide/ide-cd \
++		drivers/ide/ide-core \
++		fs/isofs/isofs \
++		fs/squashfs/squashfs \
++		fs/unionfs \
++		fs/unionfs/unionfs \
++		fs/vfat/vfat \
++		lib/zlib_inflate/zlib_inflate \
++		; do
++		if [ -f $ROOT/lib/modules/$KERNEL/kernel/$mod.ko* ]; then
++			cp -af $ROOT/lib/modules/$KERNEL/kernel/$mod.ko* $initrddir
++		fi
++	done
+ fi
+ 
+ # list of directories which will be modularized
+--- r/linux-live-5.5.0/initrd/initrd_create	2006-10-02 20:19:58.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-09-29 19:07:20.000000000 +0300
+@@ -8,6 +8,7 @@
+ # rcopy is a recursive cp, which copies also symlink's real source
+ # $1 = source (may be a regular file or symlink)
+ # $2 = target PARENT
++# $3 = optional PREFIX to strip from $1
+ #
+ rcopy()
+ {
+@@ -16,7 +17,11 @@
+       cp --parent -R "$REALPATH" "$2"
+       ln -sf "$REALPATH" "$2/$1"
+    else
+-      cp --parent -R "$1" "$2"
++	  if [ "$3" ]; then
++		  tar ${3:+-C "$3"} -cf - "${1#$3/}" | tar -C "$2" -xf -
++	  else
++		  cp --parent -R "$1" "$2"
++	  fi
+    fi
+    if [ "$?" -ne 0 ]; then
+       echo "---------------------------"
+@@ -31,11 +36,12 @@
+ # copy file/dir only if it exists, else skip with no error
+ # $1 = source (may not exist)
+ # $2 = target PARENT
++# $3 = optional PREFIX to strip from $1
+ #
+ rcopy_ex()
+ {
+    if [ -a "$1" ]; then
+-      rcopy "$1" "$2"
++      rcopy "$1" "$2" "$3"
+    fi
+ }
+ 
+@@ -130,34 +136,56 @@
+ 
+ #necessary modules and dependency files
+ mkdir -p $INITRD_TREE/$LMK/kernel/fs
+-cp kernel-modules/$KERNEL/unionfs.ko* $INITRD_TREE/$LMK/kernel/fs
+-cp kernel-modules/$KERNEL/squashfs.ko* $INITRD_TREE/$LMK/kernel/fs
++#cp kernel-modules/$KERNEL/*.ko* $INITRD_TREE/$LMK/kernel/fs
++#cp kernel-modules/$KERNEL/squashfs.ko* $INITRD_TREE/$LMK/kernel/fs
++#cp kernel-modules/$KERNEL/zlib_inflate.ko* $INITRD_TREE/$LMK/kernel/fs
+ 
++(
+ #copy filesystem modules, if not directly copied into kernel
+-rcopy_ex /$LMK/kernel/lib/zlib_inflate $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/lib/zlib_deflate $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/drivers/block/loop* $INITRD_TREE 2>>$DEBUG
+-
+-rcopy_ex /$LMK/kernel/fs/isofs $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
++rcopy $ROOT/$LMK/kernel/lib/zlib_inflate $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/lib/zlib_deflate $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/block/loop.ko* $INITRD_TREE $ROOT
++
++rcopy $ROOT/$LMK/kernel/fs/isofs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/fat $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE $ROOT
+ 
+ # add language support for filesystems
+-rcopy_ex /$LMK/kernel/fs/nls/ $INITRD_TREE 2>>$DEBUG
++rcopy $ROOT/$LMK/kernel/fs/nls/nls_cp437.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-1.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-2.ko* $INITRD_TREE $ROOT
+ 
+ #usb modules
+-rcopy_ex /$LMK/kernel/drivers/usb/storage $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/drivers/usb/host/ehci-hcd* $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/drivers/usb/host/ohci-hcd* $INITRD_TREE 2>>$DEBUG
+-rcopy_ex /$LMK/kernel/drivers/usb/host/uhci-hcd* $INITRD_TREE 2>>$DEBUG
++rcopy $ROOT/$LMK/kernel/drivers/usb/core/usbcore.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/storage $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/storage/libusual.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/scsi/scsi_mod.ko* $INITRD_TREE $ROOT
++#rcopy_ex $ROOT/$LMK/kernel/ $INITRD_TREE $ROOT
++
++rcopy $ROOT/$LMK/kernel/drivers/cdrom/cdrom.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/ide/ide-cd.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/ide/ide-core.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/ide/pci/piix.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/isofs/isofs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE $ROOT
++#rcopy_ex $ROOT/$LMK/kernel/fs/squashfs/squashfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/unionfs.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/unionfs/unionfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/lib/zlib_inflate/zlib_inflate $INITRD_TREE $ROOT
+ 
+ #disk (scsi, ide, raid, pcmcia) modules
+ #rcopy_ex /$LMK/kernel/drivers/scsi $INITRD_TREE
+ #rcopy_ex /$LMK/kernel/drivers/ide $INITRD_TREE
+ #rcopy_ex /$LMK/kernel/drivers/pcmcia $INITRD_TREE
++) 2>>$DEBUG
+ 
+ if [ "$COMPRESS" = 1 ]; then
+    debug "gzipping kernel modules"
+--- r/linux-live-5.5.0/initrd/linuxrc	2006-10-02 20:19:58.000000000 +0300
++++ linux-live-5.5.0/initrd/linuxrc	2006-09-28 01:19:28.000000000 +0300
+@@ -185,6 +185,9 @@
+ fi
+ 
+ header "linux live end, starting the Linux distribution"
++
++$DEBUGCMD
++
+ pivot_root . $INITRAMDISK
+ exec $CHROOT . sbin/init <dev/console >dev/console 2>&1
+ 
+--- r/linux-live-5.5.0/tools/liblinuxlive	2006-10-02 20:19:58.000000000 +0300
++++ linux-live-5.5.0/tools/liblinuxlive	2006-09-29 18:04:58.000000000 +0300
+@@ -441,10 +441,13 @@
+ #
+ modprobe_essential_modules()
+ {
++   echolog "starting IDE device support"
++   modprobe_module piix
+    echolog "starting loop device support"
+    modprobe_module loop max_loop=255
+    echolog "starting cdrom filesystem support"
+    modprobe_module isofs
++   modprobe_module ide-cd
+    echolog "starting squashfs support"
+    modprobe_module squashfs
+    echolog "starting unionfs support"
+@@ -456,6 +459,12 @@
+    modprobe_module vfat
+    echolog "starting ntfs support"
+    modprobe_module ntfs
++   echolog "starting xfs support"
++   modprobe_module xfs
++   echolog "starting reiserfs support"
++   modprobe_module reiserfs
++   echolog "starting ext3 support"
++   modprobe_module ext3
+    create_block_devices
+ }
+ 
