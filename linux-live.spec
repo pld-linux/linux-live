@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.6
+Release:	1.7
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -73,7 +73,7 @@ install -d $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-%{__cp} -p initrd/{cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} -p initrd/{cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 # copy /bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
@@ -92,8 +92,7 @@ ln -s lib $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/%{_lib}
 # avoid autodeps
 # how to copy file without preserving +x bit?
 chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/modprobe
-chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd_create
-chmod -x $RPM_BUILD_ROOT%{_libdir}/liblinuxlive
+chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/initrd_create
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -115,8 +114,10 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
 %attr(755,root,root) %{_libexecdir}/runme.sh
-%attr(755,root,root) %{_libexecdir}/cleanup
-%attr(755,root,root) %{_libexecdir}/initrd_create
-%{_libexecdir}/linuxrc
 %{_libexecdir}/cd-root
-%{_libexecdir}/initrd
+%dir %{_libexecdir}/initrd
+%{_libexecdir}/initrd/linuxrc
+%attr(755,root,root) %{_libexecdir}/initrd/cleanup
+%attr(755,root,root) %{_libexecdir}/initrd/initrd_create
+%dir %{_libexecdir}/initrd/rootfs
+%{_libexecdir}/initrd/rootfs/bin
