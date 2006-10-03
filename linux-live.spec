@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.4
+Release:	1.5
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -22,6 +22,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_libdir	%{_prefix}/lib
 %define		_libexecdir	%{_libdir}/%{name}
 %define		_sysconfdir	/etc/%{name}
+%define		__cp	cp --preserve=timestamps
 
 %description
 Linux Live is a set of shell scripts which allows you to create own
@@ -59,34 +60,39 @@ find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
 rm -rf $RPM_BUILD_ROOT
 # tools for livecd
 install -d $RPM_BUILD_ROOT{%{_libdir},%{_bindir},%{_sbindir}}
-cp -a tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
-cp -a tools/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $RPM_BUILD_ROOT%{_bindir}
-cp -a tools/uselivemod $RPM_BUILD_ROOT%{_sbindir}
+%{__cp} -p tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
+%{__cp} -a tools/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $RPM_BUILD_ROOT%{_bindir}
+%{__cp} -a tools/uselivemod $RPM_BUILD_ROOT%{_sbindir}
 
 # tools for building livecd
 install -d $RPM_BUILD_ROOT%{_sysconfdir}
-cp -a config $RPM_BUILD_ROOT%{_sysconfdir}
+%{__cp} config $RPM_BUILD_ROOT%{_sysconfdir}
 install -d $RPM_BUILD_ROOT%{_libexecdir}
-cp -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
-cp -a runme.sh $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} runme.sh $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-cp -a initrd/{cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} -p initrd/{cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 # copy /bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-cp -a /bin/initrd-busybox $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/busybox
-cp -a /sbin/blkid $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-cp -a %{_bindir}/eject $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-cp -a initrd/rootfs/bin/modprobe $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-cp -a %{_sbindir}/unionctl $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-cp -a %{_sbindir}/uniondbg $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
+%{__cp} /bin/initrd-busybox $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/busybox
+%{__cp} /sbin/blkid $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
+%{__cp} %{_bindir}/eject $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
+%{__cp} initrd/rootfs/bin/modprobe $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
+%{__cp} %{_sbindir}/unionctl $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
+%{__cp} %{_sbindir}/uniondbg $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/lib
 # /%{_lib}
 %if "%{_lib}" != "lib"
 ln -s lib $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/%{_lib}
 %endif
+
+# avoid autodeps
+# how to copy file without preserving +x bit?
+chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/modprobe
+chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd_create
 
 %clean
 rm -rf $RPM_BUILD_ROOT
