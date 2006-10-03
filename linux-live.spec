@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.3
+Release:	1.4
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -21,6 +21,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libdir	%{_prefix}/lib
 %define		_libexecdir	%{_libdir}/%{name}
+%define		_sysconfdir	/etc/%{name}
 
 %description
 Linux Live is a set of shell scripts which allows you to create own
@@ -63,6 +64,8 @@ cp -a tools/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $RPM_BUILD_ROOT%{_bindir}
 cp -a tools/uselivemod $RPM_BUILD_ROOT%{_sbindir}
 
 # tools for building livecd
+install -d $RPM_BUILD_ROOT%{_sysconfdir}
+cp -a config $RPM_BUILD_ROOT%{_sysconfdir}
 install -d $RPM_BUILD_ROOT%{_libexecdir}
 cp -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
 cp -a runme.sh $RPM_BUILD_ROOT%{_libexecdir}
@@ -101,6 +104,8 @@ rm -rf $RPM_BUILD_ROOT
 %files build
 %defattr(644,root,root,755)
 %doc DOC/changelog.txt DOC/requirements.txt
+%dir %{_sysconfdir}
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
 %attr(755,root,root) %{_libexecdir}/runme.sh
 %attr(755,root,root) %{_libexecdir}/cleanup
