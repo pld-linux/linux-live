@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.7
+Release:	1.8
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -93,6 +93,7 @@ ln -s lib $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/%{_lib}
 # how to copy file without preserving +x bit?
 chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/modprobe
 chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/initrd_create
+chmod -x $RPM_BUILD_ROOT%{_libdir}/liblinuxlive
 
 %clean
 rm -rf $RPM_BUILD_ROOT
