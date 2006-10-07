@@ -40,11 +40,15 @@ manuala i wszystkie inne nieistotne dla nas pliki), a nastêpnie
 
 %package build
 Summary:	Linux Live build scripts
+Summary(pl):	Skrypty do tworzenia Linux Live
 Group:		Applications/System
 Requires:	%{name} = %{version}-%{release}
 
 %description build
 Scripts to build your livecd with Linux Live scripts.
+
+%description build -l pl
+Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
 
 %prep
 %setup -q
