@@ -88,7 +88,7 @@
  cp -R cd-root/* $CDDATA
 -cp tools/* $CDDATA/tools
 +cp /usr/bin/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $CDDATA/tools
-+cp /usr/lib64/liblinuxlive $CDDATA/tools
++cp /usr/lib/liblinuxlive $CDDATA/tools
 +cp /usr/sbin/uselivemod $CDDATA/tools
 +cp /sbin/mksquashfs $CDDATA/tools
 +cp /sbin/unsquashfs $CDDATA/tools
