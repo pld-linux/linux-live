@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.8
+Release:	1.13
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -19,7 +19,6 @@ BuildRequires:	unionfs
 Requires:	squashfs
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libdir	%{_prefix}/lib
 %define		_libexecdir	%{_libdir}/%{name}
 %define		_sysconfdir	/etc/%{name}
 %define		__cp	cp --preserve=timestamps
@@ -57,6 +56,10 @@ Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
 %patch2 -p1
 %patch3 -p1
 
+%if "%{_lib}" != "lib"
+%{__sed} -i -e 's,usr/lib,usr/%{_lib},' runme.sh
+%endif
+
 rm -rf initrd/kernel-modules/2.6.16
 find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
 
@@ -74,6 +77,7 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 install -d $RPM_BUILD_ROOT%{_libexecdir}
 %{__cp} -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
 %{__cp} runme.sh $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} -a DOC $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
@@ -118,8 +122,16 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_sysconfdir}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
+%{_libexecdir}/DOC
 %attr(755,root,root) %{_libexecdir}/runme.sh
-%{_libexecdir}/cd-root
+%dir %{_libexecdir}/cd-root
+%{_libexecdir}/cd-root/boot
+%{_libexecdir}/cd-root/tools
+%{_libexecdir}/cd-root/filelist.txt
+%{_libexecdir}/cd-root/isolinux.cfg
+%{_libexecdir}/cd-root/livecd.sgn
+%{_libexecdir}/cd-root/*.bat
+%attr(755,root,root) %{_libexecdir}/cd-root/*.sh
 %dir %{_libexecdir}/initrd
 %{_libexecdir}/initrd/linuxrc
 %attr(755,root,root) %{_libexecdir}/initrd/cleanup
