@@ -1,5 +1,14 @@
---- _broken-linux-live-5.5.0/initrd/initrd_create	2006-09-26 17:45:45.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-09-27 15:27:17.000000000 +0300
+--- linux-live/initrd/initrd_create~	2006-10-13 15:48:19.000000000 +0300
++++ linux-live/initrd/initrd_create	2006-10-13 15:50:44.000000000 +0300
+@@ -3,7 +3,7 @@
+ #
+ # Author:	  Tomas M. <http://www.linux-live.org>
+ 
+-. ../config || exit 1
++. /etc/linux-live/config || exit 1
+ 
+ # rcopy is a recursive cp, which copies also symlink's real source
+ # $1 = source (may be a regular file or symlink)
 @@ -109,7 +109,22 @@
  ln -s busybox $INITRD_TREE/bin/cat
  ln -s busybox $INITRD_TREE/bin/grep
