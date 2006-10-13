@@ -1,4 +1,4 @@
---- r/linux-live-5.5.0/config	2006-10-02 20:19:58.000000000 +0300
+--- linux-live-5.5.0/config	2006-10-02 20:19:58.000000000 +0300
 +++ linux-live-5.5.0/config	2006-09-29 15:30:28.000000000 +0300
 @@ -24,12 +24,21 @@
  if [ ! -d $initrddir ]; then
@@ -28,8 +28,8 @@
  fi
  
  # list of directories which will be modularized
---- r/linux-live-5.5.0/initrd/initrd_create	2006-10-02 20:19:58.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-09-29 19:07:20.000000000 +0300
+--- linux-live-5.5.0/initrd/initrd_create	2006-09-29 19:07:20.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
 @@ -8,6 +8,7 @@
  # rcopy is a recursive cp, which copies also symlink's real source
  # $1 = source (may be a regular file or symlink)
@@ -65,7 +65,7 @@
     fi
  }
  
-@@ -130,34 +136,56 @@
+@@ -130,34 +136,60 @@
  
  #necessary modules and dependency files
  mkdir -p $INITRD_TREE/$LMK/kernel/fs
@@ -91,14 +91,16 @@
 +rcopy $ROOT/$LMK/kernel/lib/zlib_deflate $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/block/loop.ko* $INITRD_TREE $ROOT
 +
-+rcopy $ROOT/$LMK/kernel/fs/isofs $INITRD_TREE $ROOT
++rcopy_ex $ROOT/$LMK/kernel/fs/isofs $INITRD_TREE $ROOT
++rcopy_ex $ROOT/$LMK/kernel/fs/isofs.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/fat $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT
++#rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT # causes weird issues
 +rcopy $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/fs/jbd/jbd.ko* $INITRD_TREE $ROOT
  
  # add language support for filesystems
 -rcopy_ex /$LMK/kernel/fs/nls/ $INITRD_TREE 2>>$DEBUG
@@ -112,24 +114,26 @@
 -rcopy_ex /$LMK/kernel/drivers/usb/host/ohci-hcd* $INITRD_TREE 2>>$DEBUG
 -rcopy_ex /$LMK/kernel/drivers/usb/host/uhci-hcd* $INITRD_TREE 2>>$DEBUG
 +rcopy $ROOT/$LMK/kernel/drivers/usb/core/usbcore.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/input/usbhid.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/storage $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/storage/libusual.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/scsi/scsi_mod.ko* $INITRD_TREE $ROOT
-+#rcopy_ex $ROOT/$LMK/kernel/ $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/scsi/sr_mod.ko* $INITRD_TREE $ROOT
 +
 +rcopy $ROOT/$LMK/kernel/drivers/cdrom/cdrom.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/ide/ide-cd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/ide/ide-core.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/ide/pci/piix.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/scsi/ata_piix.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/scsi/libata.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/isofs/isofs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE $ROOT
-+#rcopy_ex $ROOT/$LMK/kernel/fs/squashfs/squashfs $INITRD_TREE $ROOT
++rcopy_ex $ROOT/$LMK/kernel/fs/squashfs.ko* $INITRD_TREE $ROOT
++rcopy_ex $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/unionfs.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/unionfs/unionfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/lib/zlib_inflate/zlib_inflate $INITRD_TREE $ROOT
  
  #disk (scsi, ide, raid, pcmcia) modules
  #rcopy_ex /$LMK/kernel/drivers/scsi $INITRD_TREE
@@ -139,7 +143,7 @@
  
  if [ "$COMPRESS" = 1 ]; then
     debug "gzipping kernel modules"
---- r/linux-live-5.5.0/initrd/linuxrc	2006-10-02 20:19:58.000000000 +0300
+--- linux-live-5.5.0/initrd/linuxrc	2006-10-02 20:19:58.000000000 +0300
 +++ linux-live-5.5.0/initrd/linuxrc	2006-09-28 01:19:28.000000000 +0300
 @@ -185,6 +185,9 @@
  fi
@@ -151,7 +155,7 @@
  pivot_root . $INITRAMDISK
  exec $CHROOT . sbin/init <dev/console >dev/console 2>&1
  
---- r/linux-live-5.5.0/tools/liblinuxlive	2006-10-02 20:19:58.000000000 +0300
+--- linux-live-5.5.0/tools/liblinuxlive	2006-10-02 20:19:58.000000000 +0300
 +++ linux-live-5.5.0/tools/liblinuxlive	2006-09-29 18:04:58.000000000 +0300
 @@ -441,10 +441,13 @@
  #
@@ -180,3 +184,14 @@
     create_block_devices
  }
  
+--- linux-live-5.5.0/cd-root/isolinux.cfg	2006-05-05 23:25:22.000000000 +0300
++++ linux-live-5.5.0/cd-root/isolinux.cfg	2006-10-03 14:03:53.000000000 +0300
+@@ -7,7 +7,7 @@
+ 
+ label linux
+ kernel boot/vmlinuz
+-append vga=769 max_loop=255 initrd=boot/initrd.gz init=linuxrc load_ramdisk=1 prompt_ramdisk=0 ramdisk_size=4444 root=/dev/ram0 rw
++append vga=769 max_loop=255 initrd=boot/initrd.gz init=linuxrc load_ramdisk=1 prompt_ramdisk=0 ramdisk_size=6444 root=/dev/ram0 rw
+ 
+ label memtest
+ kernel boot/memtest
