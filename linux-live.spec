@@ -2,15 +2,13 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.13
+Release:	1.15
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
 # Source0-md5:	6a59f1ecf30780f8b3facd5dfcb01f13
 Patch0:		%{name}-fixes.patch
-Patch1:		%{name}-config.patch
-Patch2:		%{name}-modprobe.patch
-Patch3:		%{name}-modules.patch
+Patch1:		%{name}-package.patch
 URL:		http://www.linux-live.org/
 BuildRequires:	busybox-initrd
 BuildRequires:	e2fsprogs
@@ -42,6 +40,9 @@ Summary:	Linux Live build scripts
 Summary(pl):	Skrypty do tworzenia Linux Live
 Group:		Applications/System
 Requires:	%{name} = %{version}-%{release}
+Requires:	mkisofs
+Requires:	squashfs
+Requires:	unionfs
 
 %description build
 Scripts to build your livecd with Linux Live scripts.
@@ -53,8 +54,6 @@ Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
 
 %if "%{_lib}" != "lib"
 %{__sed} -i -e 's,usr/lib,usr/%{_lib},' runme.sh
