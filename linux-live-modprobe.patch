@@ -1,5 +1,5 @@
---- linux-live/initrd/initrd_create	2006-10-13 15:50:44.000000000 +0300
-+++ linux-live/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
+--- linux-live/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 16:36:35.000000000 +0300
 @@ -3,11 +3,12 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -41,7 +41,7 @@
     fi
  }
  
-@@ -109,40 +115,81 @@
+@@ -109,40 +115,88 @@
  ln -s busybox $INITRD_TREE/bin/cat
  ln -s busybox $INITRD_TREE/bin/grep
  ln -s busybox $INITRD_TREE/bin/sleep
@@ -51,16 +51,23 @@
 +cp -a /usr/bin/pcidev $INITRD_TREE/bin
 +cp -a /usr/share/pci-database $INITRD_TREE/usr/share
 +rm -f $INITRD_TREE/lib/*
-+rcopy /lib/ld-linux.so.2 $INITRD_TREE
-+rcopy /lib/libc.so.6 $INITRD_TREE
-+rcopy /lib/libblkid.so.1 $INITRD_TREE
-+rcopy /lib/libuuid.so.1 $INITRD_TREE
-+rcopy /lib/libz.so.1 $INITRD_TREE
-+rcopy /lib/libm.so.6 $INITRD_TREE
-+rcopy /lib/libdevmapper.so.1.02 $INITRD_TREE
-+rcopy /lib/libselinux.so.1 $INITRD_TREE
-+rcopy /lib/libsepol.so.1 $INITRD_TREE
-+rcopy /lib/libdl.so.2 $INITRD_TREE
++if [ -d /lib64 ]; then
++	lib=lib64
++	ld_linux=ld-linux-x86-64.so.?
++else
++	lib=lib
++	ld_linux=ld-linux.so.?
++fi
++rcopy /$lib/$ld_linux $INITRD_TREE
++rcopy /$lib/libc.so.? $INITRD_TREE
++rcopy /$lib/libblkid.so.? $INITRD_TREE
++rcopy /$lib/libuuid.so.? $INITRD_TREE
++rcopy /$lib/libz.so.? $INITRD_TREE
++rcopy /$lib/libm.so.* $INITRD_TREE
++rcopy /$lib/libdevmapper.so.* $INITRD_TREE
++rcopy /$lib/libselinux.so.* $INITRD_TREE
++rcopy /$lib/libsepol.so.* $INITRD_TREE
++rcopy /$lib/libdl.so.* $INITRD_TREE
  
  LMK="lib/modules/$KERNEL"
  
