@@ -1,40 +1,12 @@
---- linux-live/initrd/initrd_create~	2006-10-13 15:48:19.000000000 +0300
-+++ linux-live/initrd/initrd_create	2006-10-13 15:50:44.000000000 +0300
-@@ -3,7 +3,7 @@
+--- linux-live/initrd/initrd_create	2006-10-13 15:50:44.000000000 +0300
++++ linux-live/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
+@@ -3,11 +3,12 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
  
 -. ../config || exit 1
 +. /etc/linux-live/config || exit 1
  
- # rcopy is a recursive cp, which copies also symlink's real source
- # $1 = source (may be a regular file or symlink)
-@@ -109,7 +109,22 @@
- ln -s busybox $INITRD_TREE/bin/cat
- ln -s busybox $INITRD_TREE/bin/grep
- ln -s busybox $INITRD_TREE/bin/sleep
-+cp -a /bin/mawk $INITRD_TREE/bin/awk
- ln -s bin $INITRD_TREE/sbin
-+mkdir -p $INITRD_TREE/usr/share
-+cp -a /usr/bin/pcidev $INITRD_TREE/bin
-+cp -a /usr/share/pci-database $INITRD_TREE/usr/share
-+rm -f $INITRD_TREE/lib/*
-+rcopy /lib/ld-linux.so.2 $INITRD_TREE
-+rcopy /lib/libc.so.6 $INITRD_TREE
-+rcopy /lib/libblkid.so.1 $INITRD_TREE
-+rcopy /lib/libuuid.so.1 $INITRD_TREE
-+rcopy /lib/libz.so.1 $INITRD_TREE
-+rcopy /lib/libm.so.6 $INITRD_TREE
-+rcopy /lib/libdevmapper.so.1.02 $INITRD_TREE
-+rcopy /lib/libselinux.so.1 $INITRD_TREE
-+rcopy /lib/libsepol.so.1 $INITRD_TREE
-+rcopy /lib/libdl.so.2 $INITRD_TREE
- 
- LMK="lib/modules/$KERNEL"
- 
---- linux-live-5.5.0/initrd/initrd_create	2006-09-29 19:07:20.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
-@@ -8,6 +8,7 @@
  # rcopy is a recursive cp, which copies also symlink's real source
  # $1 = source (may be a regular file or symlink)
  # $2 = target PARENT
@@ -69,7 +41,28 @@
     fi
  }
  
-@@ -130,34 +136,60 @@
+@@ -109,40 +115,81 @@
+ ln -s busybox $INITRD_TREE/bin/cat
+ ln -s busybox $INITRD_TREE/bin/grep
+ ln -s busybox $INITRD_TREE/bin/sleep
++cp -a /bin/mawk $INITRD_TREE/bin/awk
+ ln -s bin $INITRD_TREE/sbin
++mkdir -p $INITRD_TREE/usr/share
++cp -a /usr/bin/pcidev $INITRD_TREE/bin
++cp -a /usr/share/pci-database $INITRD_TREE/usr/share
++rm -f $INITRD_TREE/lib/*
++rcopy /lib/ld-linux.so.2 $INITRD_TREE
++rcopy /lib/libc.so.6 $INITRD_TREE
++rcopy /lib/libblkid.so.1 $INITRD_TREE
++rcopy /lib/libuuid.so.1 $INITRD_TREE
++rcopy /lib/libz.so.1 $INITRD_TREE
++rcopy /lib/libm.so.6 $INITRD_TREE
++rcopy /lib/libdevmapper.so.1.02 $INITRD_TREE
++rcopy /lib/libselinux.so.1 $INITRD_TREE
++rcopy /lib/libsepol.so.1 $INITRD_TREE
++rcopy /lib/libdl.so.2 $INITRD_TREE
+ 
+ LMK="lib/modules/$KERNEL"
  
  #necessary modules and dependency files
  mkdir -p $INITRD_TREE/$LMK/kernel/fs
