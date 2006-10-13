@@ -56,8 +56,8 @@
  # where to save resulting livecd ISO image
 -ISO_IMAGE=/tmp/livecd.iso
 +ISO_IMAGE=${ISO_IMAGE:-/home/glen/livecd.iso}
---- linux-live/runme.sh	2006-10-13 15:11:34.000000000 +0300
-+++ linux-live/runme.sh	2006-10-13 15:33:24.000000000 +0300
+--- linux-live/runme.sh	2006-10-13 15:33:24.000000000 +0300
++++ linux-live-5.5.0/runme.sh	2006-10-13 18:25:50.000000000 +0300
 @@ -10,8 +10,8 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
@@ -82,8 +82,23 @@
  if [ "`ls $VMLINUZ 2>>$DEBUG`" = "" ]; then echo "cannot find $VMLINUZ"; exit 1; fi
  
  header "Creating LiveCD from your Linux"
---- linux-live/initrd/initrd_create	2006-10-13 14:38:45.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 16:36:35.000000000 +0300
+@@ -40,7 +40,13 @@
+ echo "copying cd-root to $CDDATA, using kernel from $VMLINUZ"
+ echo "Using kernel modules from /lib/modules/$KERNEL"
+ cp -R cd-root/* $CDDATA
+-cp tools/* $CDDATA/tools
++cp /usr/bin/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $CDDATA/tools
++cp /usr/lib64/liblinuxlive $CDDATA/tools
++cp /usr/sbin/uselivemod $CDDATA/tools
++cp /sbin/mksquashfs $CDDATA/tools
++cp /sbin/unsquashfs $CDDATA/tools
++cp /usr/sbin/unionctl $CDDATA/tools
++cp /usr/sbin/uniondbg $CDDATA/tools
+ cp -R DOC/* $CDDATA
+ cp $VMLINUZ $CDDATA/boot/vmlinuz
+ 
+--- linux-live-5.5.0/initrd/initrd_create	2006-10-13 16:36:35.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 18:45:27.000000000 +0300
 @@ -3,11 +3,12 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -125,11 +140,39 @@
     fi
  }
  
-@@ -109,40 +115,88 @@
+@@ -58,12 +64,6 @@
+    exit 1
+ fi
+ 
+-if [ "`ls -1 rootfs/lib`" = "" ]; then
+-   echo "cannot find essential libc libraries."
+-   echo "please add ld-linux and libc.so to `pwd`./rootfs/lib"
+-   exit 1
+-fi
+-
+ debug "creating empty directory $INITRD_TREE"
+ rm -Rf $INITRD_TREE
+ mkdir $INITRD_TREE
+@@ -89,7 +89,8 @@
+ 
+ debug "copying files to the rootdisk"
+ touch $INITRD_TREE/etc/{m,fs}tab
+-cp {linuxrc,cleanup,liblinuxlive} $INITRD_TREE # symlink will be copied as original file
++cp {linuxrc,cleanup} $INITRD_TREE
++cp /usr/lib/liblinuxlive $INITRD_TREE
+ chmod a+x $INITRD_TREE/linuxrc
+ chmod a+x $INITRD_TREE/cleanup
+ 
+@@ -109,40 +110,93 @@
  ln -s busybox $INITRD_TREE/bin/cat
  ln -s busybox $INITRD_TREE/bin/grep
  ln -s busybox $INITRD_TREE/bin/sleep
-+cp -a /bin/mawk $INITRD_TREE/bin/awk
++#cp -a /bin/mawk $INITRD_TREE/bin/awk
++#cp -a /bin/initrd-busybox $INITRD_TREE/bin/busybox
++#cp -a /sbin/blkid $INITRD_TREE/bin
++#cp -a /usr/bin/eject $INITRD_TREE/bin
++#cp -a /usr/sbin/unionctl $INITRD_TREE/bin
++#cp -a /usr/sbin/uniondbg $INITRD_TREE/bin
  ln -s bin $INITRD_TREE/sbin
 +mkdir -p $INITRD_TREE/usr/share
 +cp -a /usr/bin/pcidev $INITRD_TREE/bin
