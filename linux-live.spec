@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.15
+Release:	1.26
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -10,10 +10,6 @@ Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
 Patch0:		%{name}-fixes.patch
 Patch1:		%{name}-package.patch
 URL:		http://www.linux-live.org/
-BuildRequires:	busybox-initrd
-BuildRequires:	e2fsprogs
-BuildRequires:	eject
-BuildRequires:	unionfs
 Requires:	squashfs
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -40,7 +36,15 @@ Summary:	Linux Live build scripts
 Summary(pl):	Skrypty do tworzenia Linux Live
 Group:		Applications/System
 Requires:	%{name} = %{version}-%{release}
+Requires:	busybox
+Requires:	coreutils
+Requires:	e2fsprogs
+Requires:	eject
+Requires:	grep
+Requires:	mawk
 Requires:	mkisofs
+Requires:	pci-database
+Requires:	sed
 Requires:	squashfs
 Requires:	unionfs
 
@@ -56,7 +60,7 @@ Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
 %patch1 -p1
 
 %if "%{_lib}" != "lib"
-%{__sed} -i -e 's,usr/lib,usr/%{_lib},' runme.sh
+%{__sed} -i -e 's,usr/lib,usr/%{_lib},' runme.sh initrd/initrd_create
 %endif
 
 rm -rf initrd/kernel-modules/2.6.16
@@ -84,14 +88,8 @@ install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 # copy /bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-%{__cp} /bin/initrd-busybox $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/busybox
-%{__cp} /sbin/blkid $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-%{__cp} %{_bindir}/eject $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
 %{__cp} initrd/rootfs/bin/modprobe $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-%{__cp} %{_sbindir}/unionctl $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-%{__cp} %{_sbindir}/uniondbg $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/lib
-# /%{_lib}
 %if "%{_lib}" != "lib"
 ln -s lib $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/%{_lib}
 %endif
@@ -136,4 +134,5 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libexecdir}/initrd/cleanup
 %attr(755,root,root) %{_libexecdir}/initrd/initrd_create
 %dir %{_libexecdir}/initrd/rootfs
-%{_libexecdir}/initrd/rootfs/bin
+%dir %{_libexecdir}/initrd/rootfs/bin
+%attr(755,root,root) %{_libexecdir}/initrd/rootfs/bin/modprobe
