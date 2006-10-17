@@ -1,51 +1,36 @@
---- linux-live-5.5.0/config	2006-09-27 01:47:53.000000000 +0300
-+++ linux-live-5.5.0/config	2006-09-29 15:30:28.000000000 +0300
-@@ -13,11 +13,33 @@
+--- linux-live-5.5.0/config	2006-09-29 15:30:28.000000000 +0300
++++ linux-live-5.5.0/config	2006-10-17 22:53:07.000000000 +0300
+@@ -12,31 +12,33 @@
+-RAM0SIZE=4444
++RAM0SIZE=6444
  
  # change this variable if you installed your distro to some directory.
  # for example ROOT=/tmp/newdir. You may leave it empty, then it defaults to /
 -ROOT=
-+ROOT=/vservers/anaconda/root
++#ROOT=/opt/livecd/root
  
  # kernel version. Change it to "2.6.10" for example, if you are building
  # LiveCD with a different kernel than the one you are actually running
 -KERNEL="`uname -r`"
 +image=$(cd $ROOT; readlink boot/vmlinuz)
 +KERNEL="${image#vmlinuz-}"
-+
-+initrddir="${ROOT%/root}/linux-live-$LINUX_LIVE_VERSION/initrd/kernel-modules/$KERNEL"
-+if [ ! -d $initrddir ]; then
-+	echo >&2 "Creating $initrd dir"
-+	mkdir -p $initrddir
-+	for mod in \
-+		drivers/cdrom/cdrom \
-+		drivers/ide/ide-cd \
-+		drivers/ide/ide-core \
-+		fs/isofs/isofs \
-+		fs/squashfs/squashfs \
-+		fs/unionfs \
-+		fs/unionfs/unionfs \
-+		fs/vfat/vfat \
-+		lib/zlib_inflate/zlib_inflate \
-+		; do
-+		if [ -f $ROOT/lib/modules/$KERNEL/kernel/$mod.ko* ]; then
-+			cp -af $ROOT/lib/modules/$KERNEL/kernel/$mod.ko* $initrddir
-+		fi
-+	done
-+fi
  
  # list of directories which will be modularized
  # You may add 'dev' inthere in the case your distro doesn't have udev installed
-@@ -28,15 +50,15 @@
++# You should add 'lib64' here if you're having 64bit arch
+ MKMOD="bin etc home lib opt root usr sbin var"
+ 
+ # compressed directories (img) will be stored here
+ # (the whole folder will be erased now!)
 -CDDATA=/tmp/live_data_$$
-+CDDATA=../live_data_$$
++export CDDATA=${CDDATA:-$(mktemp -d)}
  
  # name of initrd image
  INITRDIMG=initrd
  
  # Enable debug by setting the following parameter to "logfile.log"
 -DEBUG=/tmp/linux-live-debug.log
-+DEBUG=../linux-live-debug.log
++DEBUG=/dev/null
  
  # Install/uninstall all scripts from /tools to /usr/sbin and /usr/lib
  # so the user is able to use all these commands while running his/her Live Linux
@@ -55,7 +40,7 @@
  
  # where to save resulting livecd ISO image
 -ISO_IMAGE=/tmp/livecd.iso
-+ISO_IMAGE=${ISO_IMAGE:-/home/glen/livecd.iso}
++ISO_IMAGE=${ISO_IMAGE:-/root/livecd.iso}
 --- linux-live/runme.sh	2006-10-13 15:33:24.000000000 +0300
 +++ linux-live-5.5.0/runme.sh	2006-10-13 18:25:50.000000000 +0300
 @@ -10,8 +10,8 @@
