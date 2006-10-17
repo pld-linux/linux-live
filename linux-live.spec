@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.26
+Release:	1.30
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
@@ -11,8 +11,10 @@ Patch0:		%{name}-fixes.patch
 Patch1:		%{name}-package.patch
 URL:		http://www.linux-live.org/
 Requires:	squashfs
+BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+%define		_libdir	%{_prefix}/lib
 %define		_libexecdir	%{_libdir}/%{name}
 %define		_sysconfdir	/etc/%{name}
 %define		__cp	cp --preserve=timestamps
@@ -45,7 +47,6 @@ Requires:	mawk
 Requires:	mkisofs
 Requires:	pci-database
 Requires:	sed
-Requires:	squashfs
 Requires:	unionfs
 
 %description build
@@ -58,10 +59,6 @@ Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-
-%if "%{_lib}" != "lib"
-%{__sed} -i -e 's,usr/lib,usr/%{_lib},' runme.sh initrd/initrd_create
-%endif
 
 rm -rf initrd/kernel-modules/2.6.16
 find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
@@ -90,12 +87,9 @@ ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
 %{__cp} initrd/rootfs/bin/modprobe $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/lib
-%if "%{_lib}" != "lib"
-ln -s lib $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/%{_lib}
-%endif
 
 # avoid autodeps
-# how to copy file without preserving +x bit?
+# FIXME: how to copy file without preserving +x bit?
 chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin/modprobe
 chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/initrd_create
 chmod -x $RPM_BUILD_ROOT%{_libdir}/liblinuxlive
