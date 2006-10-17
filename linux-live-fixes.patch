@@ -82,3 +82,14 @@
  fi
  
  header "linux live end, starting the Linux distribution"
+--- linux-live-5.5.0/tools/liblinuxlive	2006-10-15 22:56:27.000000000 +0300
++++ linux-live-5.5.0/tools/liblinuxlive	2006-10-16 22:47:34.000000000 +0300
+@@ -142,7 +142,7 @@
+   echo "0" >/proc/sys/kernel/printk
+ 
+   KERNEL="`uname -r`"; LSMOD=/tmp/_lsmod
+-  MODULEDEPS="`cat /lib/modules/$KERNEL/modules.dep | egrep \"$1\\.ko(\\.gz)?:\"`"
++  MODULEDEPS="`cat /lib/modules/$KERNEL/modules.dep | egrep \"/$1\\.ko(\\.gz)?:\"`"
+ 
+   for MODULE in `echo $MODULEDEPS | cut -d ":" -f 2-` `echo $MODULEDEPS | cut -d ":" -f 1`; do
+      TMPMOD="/tmp/`basename $MODULE .gz`";
