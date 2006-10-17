@@ -97,8 +97,8 @@
  cp -R DOC/* $CDDATA
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
---- linux-live-5.5.0/initrd/initrd_create	2006-10-13 16:36:35.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-10-13 18:45:27.000000000 +0300
+--- linux-live-5.5.0/initrd/initrd_create	2006-10-13 18:45:27.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-10-15 22:51:08.000000000 +0300
 @@ -3,11 +3,12 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -163,16 +163,28 @@
  chmod a+x $INITRD_TREE/linuxrc
  chmod a+x $INITRD_TREE/cleanup
  
-@@ -109,40 +110,93 @@
+@@ -103,46 +104,102 @@
+ ln -s busybox $INITRD_TREE/bin/poweroff
+ ln -s busybox $INITRD_TREE/bin/halt
+ ln -s busybox $INITRD_TREE/bin/reboot
+-ln -s busybox $INITRD_TREE/bin/ld
+ ln -s busybox $INITRD_TREE/bin/ls
+-ln -s busybox $INITRD_TREE/bin/head
  ln -s busybox $INITRD_TREE/bin/cat
  ln -s busybox $INITRD_TREE/bin/grep
- ln -s busybox $INITRD_TREE/bin/sleep
-+#cp -a /bin/mawk $INITRD_TREE/bin/awk
-+#cp -a /bin/initrd-busybox $INITRD_TREE/bin/busybox
-+#cp -a /sbin/blkid $INITRD_TREE/bin
-+#cp -a /usr/bin/eject $INITRD_TREE/bin
-+#cp -a /usr/sbin/unionctl $INITRD_TREE/bin
-+#cp -a /usr/sbin/uniondbg $INITRD_TREE/bin
+-ln -s busybox $INITRD_TREE/bin/sleep
++cp -a /bin/mawk $INITRD_TREE/bin/awk
++cp -a /bin/initrd-busybox $INITRD_TREE/bin/busybox
++cp -a /sbin/blkid $INITRD_TREE/bin
++cp -a /usr/bin/eject $INITRD_TREE/bin
++cp -a /usr/sbin/unionctl $INITRD_TREE/bin
++cp -a /usr/sbin/uniondbg $INITRD_TREE/bin
++cp -a /bin/egrep $INITRD_TREE/bin
++cp -a /bin/grep $INITRD_TREE/bin
++cp -a /bin/sed $INITRD_TREE/bin
++cp -a /bin/ln $INITRD_TREE/bin
++cp -a /bin/sleep $INITRD_TREE/bin
++cp -a /bin/head $INITRD_TREE/bin
  ln -s bin $INITRD_TREE/sbin
 +mkdir -p $INITRD_TREE/usr/share
 +cp -a /usr/bin/pcidev $INITRD_TREE/bin
