@@ -82,7 +82,7 @@
  cp -R DOC/* $CDDATA
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
---- linux-live-5.5.0/initrd/initrd_create	2006-10-17 16:28:34.000000000 +0300
+--- linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
 +++ linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
 @@ -3,11 +3,12 @@
  #
@@ -169,7 +169,7 @@
  chmod a+x $INITRD_TREE/linuxrc
  chmod a+x $INITRD_TREE/cleanup
  
-@@ -103,46 +98,112 @@
+@@ -103,46 +98,113 @@
  ln -s busybox $INITRD_TREE/bin/poweroff
  ln -s busybox $INITRD_TREE/bin/halt
  ln -s busybox $INITRD_TREE/bin/reboot
@@ -282,6 +282,7 @@
 +# usb modules
 +rcopy $ROOT/$LMK/kernel/drivers/usb/core/usbcore.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/input/usbhid.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/usb/input/usbkbd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/storage $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.ko* $INITRD_TREE $ROOT
