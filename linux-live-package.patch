@@ -333,8 +333,8 @@
  pivot_root . $INITRAMDISK
  exec $CHROOT . sbin/init <dev/console >dev/console 2>&1
  
---- linux-live-5.5.0/tools/liblinuxlive	2006-09-28 03:14:39.000000000 +0300
-+++ linux-live-5.5.0/tools/liblinuxlive	2006-09-29 18:04:58.000000000 +0300
+--- linux-live-5.5.0/tools/liblinuxlive	2006-09-29 18:04:58.000000000 +0300
++++ linux-live-5.5.0/tools/liblinuxlive	2006-11-28 19:08:09.000000000 +0200
 @@ -367,6 +367,13 @@
     list_partition_devices
  }
@@ -349,21 +349,27 @@
  # Find file-path on given device
  # Mounts the device in $1 and returns path if found,
  # else unmounts and exits
-@@ -434,10 +441,13 @@
+@@ -434,10 +441,19 @@
  #
  modprobe_essential_modules()
  {
 +   echolog "starting IDE device support"
 +   modprobe_module piix
++   echolog "starting SATA device support"
++   modprobe_module libata
++   modprobe_module scsi_mod
++   modprobe_module ata_piix
     echolog "starting loop device support"
     modprobe_module loop max_loop=255
     echolog "starting cdrom filesystem support"
     modprobe_module isofs
++   modprobe_module sr_mod
 +   modprobe_module ide-cd
++   modprobe_module cdrom
     echolog "starting squashfs support"
     modprobe_module squashfs
     echolog "starting unionfs support"
-@@ -449,6 +459,12 @@
+@@ -449,6 +465,12 @@
     modprobe_module vfat
     echolog "starting ntfs support"
     modprobe_module ntfs
@@ -376,7 +382,16 @@
     create_block_devices
  }
  
-@@ -561,0 +578,13 @@
+@@ -464,6 +486,8 @@
+    modprobe_module ohci-hcd
+    modprobe_module uhci-hcd
+    modprobe_module usb-storage
++   modprobe_module usbkbd
++   modprobe_module usbhid
+    sleep $SLEEP
+    create_block_devices
+ }
+@@ -561,0 +586,13 @@
 +
 +# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
 +# $1 = root directory (union)
