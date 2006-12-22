@@ -83,7 +83,7 @@
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
 --- linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
-+++ linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
++++ linux-live-5.5.0/initrd/initrd_create	2006-12-21 21:36:56.000000000 +0200
 @@ -3,11 +3,12 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -169,7 +169,7 @@
  chmod a+x $INITRD_TREE/linuxrc
  chmod a+x $INITRD_TREE/cleanup
  
-@@ -103,46 +98,113 @@
+@@ -103,46 +98,97 @@
  ln -s busybox $INITRD_TREE/bin/poweroff
  ln -s busybox $INITRD_TREE/bin/halt
  ln -s busybox $INITRD_TREE/bin/reboot
@@ -185,28 +185,15 @@
 +ln -s busybox $INITRD_TREE/bin/uname
 +ln -s busybox $INITRD_TREE/bin/sed
 +ln -s busybox $INITRD_TREE/bin/egrep
++ln -s busybox $INITRD_TREE/bin/fgrep
 +ln -s busybox $INITRD_TREE/bin/losetup
++ln -s busybox $INITRD_TREE/bin/sort
 +cp -a /bin/mawk $INITRD_TREE/bin/awk
 +cp -a /bin/busybox $INITRD_TREE/bin/busybox
 +cp -a /sbin/blkid $INITRD_TREE/bin
 +cp -a /usr/bin/eject $INITRD_TREE/bin
 +cp -a /usr/sbin/unionctl $INITRD_TREE/bin
 +cp -a /usr/sbin/uniondbg $INITRD_TREE/bin
-+#cp -a /bin/egrep $INITRD_TREE/bin
-+#cp -a /bin/grep $INITRD_TREE/bin
-+#cp -a /bin/sed $INITRD_TREE/bin
-+#cp -a /bin/ln $INITRD_TREE/bin
-+#cp -a /bin/sleep $INITRD_TREE/bin
-+#cp -a /usr/bin/head $INITRD_TREE/bin
-+#cp -a /usr/bin/tr $INITRD_TREE/bin
-+#cp -a /usr/bin/cut $INITRD_TREE/bin
-+#cp -a /usr/bin/tail $INITRD_TREE/bin
-+#cp -a /usr/bin/dirname $INITRD_TREE/bin
-+#cp -a /bin/basename $INITRD_TREE/bin
-+#cp -a /bin/uname $INITRD_TREE/bin
-+#cp -a /bin/cp $INITRD_TREE/bin
-+#cp -a /bin/mv $INITRD_TREE/bin
-+#ln -s bin $INITRD_TREE/sbin
 +mkdir -p $INITRD_TREE/usr/share
 +cp -a /usr/bin/pcidev $INITRD_TREE/bin
 +cp -a /usr/share/pci-database $INITRD_TREE/usr/share
@@ -262,7 +249,7 @@
 +rcopy $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE $ROOT
-+#rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT # causes weird issues
++rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/jbd/jbd.ko* $INITRD_TREE $ROOT
@@ -275,6 +262,11 @@
 -rcopy_ex /$LMK/kernel/drivers/usb/host/ehci-hcd* $INITRD_TREE 2>>$DEBUG
 -rcopy_ex /$LMK/kernel/drivers/usb/host/ohci-hcd* $INITRD_TREE 2>>$DEBUG
 -rcopy_ex /$LMK/kernel/drivers/usb/host/uhci-hcd* $INITRD_TREE 2>>$DEBUG
+-
+-#disk (scsi, ide, raid, pcmcia) modules
+-#rcopy_ex /$LMK/kernel/drivers/scsi $INITRD_TREE
+-#rcopy_ex /$LMK/kernel/drivers/ide $INITRD_TREE
+-#rcopy_ex /$LMK/kernel/drivers/pcmcia $INITRD_TREE
 +rcopy $ROOT/$LMK/kernel/fs/nls/nls_cp437.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-1.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-2.ko* $INITRD_TREE $ROOT
@@ -288,26 +280,22 @@
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/usb/storage/libusual.ko* $INITRD_TREE $ROOT
++
 +rcopy $ROOT/$LMK/kernel/drivers/scsi/scsi_mod.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/scsi/sr_mod.ko* $INITRD_TREE $ROOT
-+
-+rcopy $ROOT/$LMK/kernel/drivers/cdrom/cdrom.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/ide/ide-cd.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/ide/ide-core.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/ide/pci/piix.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/scsi/ata_piix.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/drivers/scsi/libata.ko* $INITRD_TREE $ROOT
++rcopy $ROOT/$LMK/kernel/drivers/scsi/sata*.ko* $INITRD_TREE $ROOT
++
++rcopy_ex $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE $ROOT
++
++rcopy $ROOT/$LMK/kernel/drivers/cdrom/cdrom.ko* $INITRD_TREE $ROOT
++
 +rcopy $ROOT/$LMK/kernel/fs/isofs/isofs $INITRD_TREE $ROOT
 +rcopy_ex $ROOT/$LMK/kernel/fs/squashfs.ko* $INITRD_TREE $ROOT
 +rcopy_ex $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/unionfs.ko* $INITRD_TREE $ROOT
 +rcopy $ROOT/$LMK/kernel/fs/unionfs/unionfs $INITRD_TREE $ROOT
- 
--#disk (scsi, ide, raid, pcmcia) modules
-+# disk (scsi, ide, raid, pcmcia) modules
- #rcopy_ex /$LMK/kernel/drivers/scsi $INITRD_TREE
- #rcopy_ex /$LMK/kernel/drivers/ide $INITRD_TREE
- #rcopy_ex /$LMK/kernel/drivers/pcmcia $INITRD_TREE
 +) 2>>$DEBUG
  
  if [ "$COMPRESS" = 1 ]; then
@@ -333,8 +321,8 @@
  pivot_root . $INITRAMDISK
  exec $CHROOT . sbin/init <dev/console >dev/console 2>&1
  
---- linux-live-5.5.0/tools/liblinuxlive	2006-09-29 18:04:58.000000000 +0300
-+++ linux-live-5.5.0/tools/liblinuxlive	2006-11-28 19:08:09.000000000 +0200
+--- linux-live-5.5.0/tools/liblinuxlive	2006-11-28 19:08:09.000000000 +0200
++++ linux-live-5.5.0/tools/liblinuxlive	2006-12-21 21:50:27.000000000 +0200
 @@ -367,6 +367,13 @@
     list_partition_devices
  }
@@ -349,40 +337,51 @@
  # Find file-path on given device
  # Mounts the device in $1 and returns path if found,
  # else unmounts and exits
-@@ -434,10 +441,19 @@
+@@ -434,21 +441,43 @@
  #
  modprobe_essential_modules()
  {
-+   echolog "starting IDE device support"
-+   modprobe_module piix
-+   echolog "starting SATA device support"
-+   modprobe_module libata
-+   modprobe_module scsi_mod
-+   modprobe_module ata_piix
++   echolog "Loading PCI modules"
++   for m in $(modules_map pcimap); do
++      modprobe_module $m
++   done
++
     echolog "starting loop device support"
     modprobe_module loop max_loop=255
++
     echolog "starting cdrom filesystem support"
     modprobe_module isofs
 +   modprobe_module sr_mod
 +   modprobe_module ide-cd
 +   modprobe_module cdrom
++
     echolog "starting squashfs support"
     modprobe_module squashfs
++
     echolog "starting unionfs support"
-@@ -449,6 +465,12 @@
+    modprobe_module unionfs
++
+    echolog "starting vfat support"
+    modprobe_module nls_cp437
+    modprobe_module nls_iso8859-1
+    modprobe_module nls_iso8859-2
     modprobe_module vfat
++
     echolog "starting ntfs support"
     modprobe_module ntfs
++
 +   echolog "starting xfs support"
 +   modprobe_module xfs
++
 +   echolog "starting reiserfs support"
 +   modprobe_module reiserfs
++
 +   echolog "starting ext3 support"
 +   modprobe_module ext3
     create_block_devices
  }
  
-@@ -464,6 +486,8 @@
+@@ -464,6 +493,8 @@
     modprobe_module ohci-hcd
     modprobe_module uhci-hcd
     modprobe_module usb-storage
@@ -391,7 +390,7 @@
     sleep $SLEEP
     create_block_devices
  }
-@@ -561,0 +586,13 @@
+@@ -561,0 +593,29 @@
 +
 +# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
 +# $1 = root directory (union)
@@ -404,6 +403,22 @@
 +		echo "alias eth$i $drv" >> $1/etc/modprobe.conf
 +		i=$((i+1))
 +	done
++}
++
++# list all pci devices recognized on this system
++# $1 = pcimap | usbmap
++modules_map()
++{
++	t=$1
++	d=/proc/bus/pci/devices
++	k=`uname -r`
++	while read a id b; do
++		v=0x0000${id%????}
++		d=0x0000${id#????}
++		# pci module         vendor     device     subvendor  subdevice  class      class_mask driver_data
++		# nvidia               0x000010de 0xffffffff 0xffffffff 0xffffffff 0x00030200 0xffffffff 0x0
++		echo $v $d
++	done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | awk '{print $1}' | sort -u
 +}
 --- linux-live-5.5.0/cd-root/isolinux.cfg	2006-05-05 23:25:22.000000000 +0300
 +++ linux-live-5.5.0/cd-root/isolinux.cfg	2006-10-03 14:03:53.000000000 +0300
