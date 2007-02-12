@@ -1,5 +1,5 @@
 Summary:	Linux Live scripts
-Summary(pl):	Skrypty Linux Live
+Summary(pl.UTF-8):   Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
 Release:	1.31
@@ -26,16 +26,16 @@ distro, remove all unnecessary files (for example man pages and all
 other files which are not important for you) and then download and run
 these scripts to build your custom Live Linux.
 
-%description -l pl
-Linux Live to zestaw skryptów pow³oki pozwalaj±cych tworzyæ w³asne
-LiveCD z ka¿dej dystrybucji Linuksa. Wystarczy zainstalowaæ ulubion±
-dystrybucjê, usun±æ wszystkie niepotrzebne pliki (na przyk³ad strony
-manuala i wszystkie inne nieistotne dla nas pliki), a nastêpnie
-¶ci±gn±æ i uruchomiæ te skrypty, aby stworzyæ w³asnego Live Linuksa.
+%description -l pl.UTF-8
+Linux Live to zestaw skryptÃ³w powÅ‚oki pozwalajÄ…cych tworzyÄ‡ wÅ‚asne
+LiveCD z kaÅ¼dej dystrybucji Linuksa. Wystarczy zainstalowaÄ‡ ulubionÄ…
+dystrybucjÄ™, usunÄ…Ä‡ wszystkie niepotrzebne pliki (na przykÅ‚ad strony
+manuala i wszystkie inne nieistotne dla nas pliki), a nastÄ™pnie
+Å›ciÄ…gnÄ…Ä‡ i uruchomiÄ‡ te skrypty, aby stworzyÄ‡ wÅ‚asnego Live Linuksa.
 
 %package build
 Summary:	Linux Live build scripts
-Summary(pl):	Skrypty do tworzenia Linux Live
+Summary(pl.UTF-8):   Skrypty do tworzenia Linux Live
 Group:		Applications/System
 Requires:	%{name} = %{version}-%{release}
 Requires:	busybox
@@ -52,8 +52,8 @@ Requires:	unionfs
 %description build
 Scripts to build your livecd with Linux Live scripts.
 
-%description build -l pl
-Skrypty do tworzenia w³asnego livecd przy u¿yciu skryptów Linux Live.
+%description build -l pl.UTF-8
+Skrypty do tworzenia wÅ‚asnego livecd przy uÅ¼yciu skryptÃ³w Linux Live.
 
 %prep
 %setup -q
