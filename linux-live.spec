@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
 Version:	5.5.0
-Release:	1.31
+Release:	1.33
 License:	GPL
 Group:		Applications/System
 Source0:	http://www.linux-live.org/dl/%{name}-%{version}.tar.gz
