@@ -1,96 +1,66 @@
---- linux-live-5.5.0/config	2006-09-29 15:30:28.000000000 +0300
-+++ linux-live-5.5.0/config	2006-10-17 22:53:07.000000000 +0300
-@@ -12,31 +12,33 @@
--RAM0SIZE=4444
-+RAM0SIZE=6444
- 
- # change this variable if you installed your distro to some directory.
- # for example ROOT=/tmp/newdir. You may leave it empty, then it defaults to /
--ROOT=
-+#ROOT=/opt/livecd/root
+--- linux-live-5.5.0/.config	2006-09-29 15:30:28.000000000 +0300
++++ linux-live-5.5.0/.config	2006-10-17 22:53:07.000000000 +0300
+@@ -16,7 +16,8 @@
  
  # kernel version. Change it to "2.6.10" for example, if you are building
  # LiveCD with a different kernel than the one you are actually running
--KERNEL="`uname -r`"
+-KERNEL=$(uname -r)
 +image=$(cd $ROOT; readlink boot/vmlinuz)
 +KERNEL="${image#vmlinuz-}"
  
  # list of directories which will be modularized
  # You may add 'dev' inthere in the case your distro doesn't have udev installed
-+# You should add 'lib64' here if you're having 64bit arch
- MKMOD="bin etc home lib opt root usr sbin var"
- 
- # compressed directories (img) will be stored here
- # (the whole folder will be erased now!)
--CDDATA=/tmp/live_data_$$
-+export CDDATA=${CDDATA:-$(mktemp -d)}
- 
- # name of initrd image
- INITRDIMG=initrd
- 
- # Enable debug by setting the following parameter to "logfile.log"
--DEBUG=/tmp/linux-live-debug.log
-+DEBUG=/dev/null
- 
- # Install/uninstall all scripts from /tools to /usr/sbin and /usr/lib
- # so the user is able to use all these commands while running his/her Live Linux
- # Disable if your distro already contains installed linux live tools.
--INSTALL_TOOLS=1
-+INSTALL_TOOLS=0
- 
- # where to save resulting livecd ISO image
--ISO_IMAGE=/tmp/livecd.iso
-+ISO_IMAGE=${ISO_IMAGE:-/root/livecd.iso}
---- linux-live/runme.sh	2006-10-13 15:33:24.000000000 +0300
-+++ linux-live-5.5.0/runme.sh	2006-10-13 18:25:50.000000000 +0300
+--- linux-live/build	2006-10-13 15:33:24.000000000 +0300
++++ linux-live-5.5.0/build	2006-10-13 18:25:50.000000000 +0300
 @@ -10,8 +10,8 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
  
--. ./config || exit 1
 -. liblinuxlive || exit 1
-+. /etc/linux-live/config || exit 1
+-. ./.config || exit 1
 +. /usr/lib/liblinuxlive || exit 1
++. /etc/linux-live/config || exit 1
  
  # only root can continue, because only root can read all files from your system
  allow_only_root
-@@ -19,9 +19,9 @@
+@@ -30,9 +30,9 @@
  # search for kernel
  VMLINUZ=$ROOT/boot/vmlinuz
- if [ -L "$VMLINUZ" ]; then VMLINUZ=`readlink -f $VMLINUZ`; fi
--echo -ne "Enter path for the kernel you wanna use [hit enter for $VMLINUZ]: "
+ if [ -L "$VMLINUZ" ]; then VMLINUZ=$(readlink -f $VMLINUZ); fi
+-echo -ne "Enter path for the kernel you'd like to use [hit enter for $VMLINUZ]: "
 -read NEWKERNEL
 -if [ "$NEWKERNEL" != "" ]; then VMLINUZ="$NEWKERNEL"; fi
-+#echo -ne "Enter path for the kernel you wanna use [hit enter for $VMLINUZ]: "
++#echo -ne "Enter path for the kernel you'd like to use [hit enter for $VMLINUZ]: "
 +#read NEWKERNEL
 +#if [ "$NEWKERNEL" != "" ]; then VMLINUZ="$NEWKERNEL"; fi
- if [ "`ls $VMLINUZ 2>>$DEBUG`" = "" ]; then echo "cannot find $VMLINUZ"; exit 1; fi
+ if [ "$(ls $VMLINUZ 2>>$DEBUG)" = "" ]; then echo "cannot find $VMLINUZ"; exit 1; fi
  
  header "Creating LiveCD from your Linux"
-@@ -40,7 +40,13 @@
- echo "copying cd-root to $CDDATA, using kernel from $VMLINUZ"
- echo "Using kernel modules from /lib/modules/$KERNEL"
- cp -R cd-root/* $CDDATA
--cp tools/* $CDDATA/tools
-+cp /usr/bin/{deb2mo,dir2mo,img2mo,mo2dir,tgz2mo} $CDDATA/tools
-+cp /usr/lib/liblinuxlive $CDDATA/tools
-+cp /usr/sbin/uselivemod $CDDATA/tools
-+cp /sbin/mksquashfs $CDDATA/tools
-+cp /sbin/unsquashfs $CDDATA/tools
-+cp /usr/sbin/unionctl $CDDATA/tools
-+cp /usr/sbin/uniondbg $CDDATA/tools
- cp -R DOC/* $CDDATA
+@@ -40,7 +40,11 @@
+ 
+ mkdir -p $CDDATA/$LIVECDNAME
+ cp -R cd-root/linux/* $CDDATA/$LIVECDNAME
+-cp tools/* $CDDATA/$LIVECDNAME/tools
++cp /usr/bin/{deb2lzm,dir2lzm,lzm2dir,tgz2lzm} $CDDATA/$LIVECDNAME/tools
++cp /usr/lib/liblinuxlive $CDDATA/$LIVECDNAME/tools
++cp /usr/sbin/uselivemod $CDDATA/$LIVECDNAME/tools
++cp /sbin/mksquashfs $CDDATA/$LIVECDNAME/tools
++cp /sbin/unsquashfs $CDDATA/$LIVECDNAME/tools
+ cp -R DOC/LICENSE $CDDATA/$LIVECDNAME
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
 --- linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
 +++ linux-live-5.5.0/initrd/initrd_create	2006-12-21 21:36:56.000000000 +0200
-@@ -3,11 +3,12 @@
+@@ -3,7 +3,7 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
  
--. ../config || exit 1
+-. ../.config || exit 1
 +. /etc/linux-live/config || exit 1
  
+ if [ "$1" != "" ]; then
+    LIVECDNAME="$1"
+@@ -20,6 +20,7 @@
  # rcopy is a recursive cp, which copies also symlink's real source
  # $1 = source (may be a regular file or symlink)
  # $2 = target PARENT
@@ -99,19 +69,19 @@
  rcopy()
  {
 @@ -16,7 +17,11 @@
-       cp --parent -R "$REALPATH" "$2"
-       ln -sf "$REALPATH" "$2/$1"
+       cp --parent -a "$REALPATH" "$DEST"
+       ln -sf "$REALPATH" "$DEST/$SOURCE"
     else
--      cp --parent -R "$1" "$2"
+-      cp --parent -a "$SOURCE" "$DEST"
 +	  if [ "$3" ]; then
-+		  tar ${3:+-C "$3"} -cf - "${1#$3/}" | tar -C "$2" -xf -
++		  tar ${3:+-C "$3"} -cf - "${1#$3/}" | tar -C "$DEST" -xf -
 +	  else
-+		  cp --parent -R "$1" "$2"
++		  cp --parent -a "$SOURCE" "$DEST"
 +	  fi
     fi
     if [ "$?" -ne 0 ]; then
        echo "---------------------------"
-@@ -31,11 +36,12 @@
+@@ -31,12 +36,13 @@
  # copy file/dir only if it exists, else skip with no error
  # $1 = source (may not exist)
  # $2 = target PARENT
@@ -119,208 +89,35 @@
  #
  rcopy_ex()
  {
+    debug "rcopy_ex $1 $2"
     if [ -a "$1" ]; then
 -      rcopy "$1" "$2"
 +      rcopy "$1" "$2" "$3"
     fi
  }
  
-@@ -48,21 +54,8 @@
+@@ -48,19 +54,13 @@
  ##################################################
  # Create INITRD image now:
  
 -MOUNTDIR=/tmp/initrd_mountdir_$$
 -INITRD_TREE=/tmp/initrd_tree_$$
--
--if [ ! -d "kernel-modules/$KERNEL" ]; then
--   echo "The directory `pwd`/kernel-modules/$KERNEL doesn't exist."
--   echo "Please create it and copy squashfs.ko and unionfs.ko modules"
--   echo "for your kernel ($KERNEL) to this directory."
--   exit 1
--fi
--
--if [ "`ls -1 rootfs/lib`" = "" ]; then
--   echo "cannot find essential libc libraries."
--   echo "please add ld-linux and libc.so to `pwd`./rootfs/lib"
--   exit 1
--fi
 +MOUNTDIR=$(mktemp -d || echo /tmp/initrd_mountdir_$$)
 +INITRD_TREE=$(mktemp -d || echo /tmp/initrd_tree_$$)
+ INITRDIMG=initrd
+ 
+ if [ ! -d $ROOT/$LMK ]; then
+    echo "cannot find your kernel modules (*.ko) in $ROOT/$LMK"
+    exit 1
+ fi
+-
+-if [ "$(ls -1 rootfs/lib)" = "" ]; then
+-   echo "cannot find essential libc libraries."
+-   echo "please add ld-linux and libc.so to $(pwd)./rootfs/lib"
+-   exit 1
+-fi
  
  debug "creating empty directory $INITRD_TREE"
- rm -Rf $INITRD_TREE
-@@ -81,15 +74,17 @@
-   mknod $INITRD_TREE/dev/tty$i c 4 $i;
- done
- 
-+mkdir $INITRD_TREE/dev/loop
- loops=255
- while [ $loops -ge 0 ]; do
--   mknod $INITRD_TREE/dev/loop$loops b 7 $loops
-+   mknod $INITRD_TREE/dev/loop/$loops b 7 $loops
-    loops=$(($loops-1))
- done
- 
- debug "copying files to the rootdisk"
- touch $INITRD_TREE/etc/{m,fs}tab
--cp {linuxrc,cleanup,liblinuxlive} $INITRD_TREE # symlink will be copied as original file
-+cp {linuxrc,cleanup} $INITRD_TREE
-+cp /usr/lib/liblinuxlive $INITRD_TREE
- chmod a+x $INITRD_TREE/linuxrc
- chmod a+x $INITRD_TREE/cleanup
- 
-@@ -103,46 +98,97 @@
- ln -s busybox $INITRD_TREE/bin/poweroff
- ln -s busybox $INITRD_TREE/bin/halt
- ln -s busybox $INITRD_TREE/bin/reboot
--ln -s busybox $INITRD_TREE/bin/ld
- ln -s busybox $INITRD_TREE/bin/ls
--ln -s busybox $INITRD_TREE/bin/head
- ln -s busybox $INITRD_TREE/bin/cat
--ln -s busybox $INITRD_TREE/bin/grep
--ln -s busybox $INITRD_TREE/bin/sleep
--ln -s bin $INITRD_TREE/sbin
-+ln -s busybox $INITRD_TREE/bin/mkdir
-+ln -s busybox $INITRD_TREE/bin/echo
-+ln -s busybox $INITRD_TREE/bin/uname
-+ln -s busybox $INITRD_TREE/bin/sed
-+ln -s busybox $INITRD_TREE/bin/egrep
-+ln -s busybox $INITRD_TREE/bin/fgrep
-+ln -s busybox $INITRD_TREE/bin/losetup
-+ln -s busybox $INITRD_TREE/bin/sort
-+cp -a /bin/mawk $INITRD_TREE/bin/awk
-+cp -a /bin/busybox $INITRD_TREE/bin/busybox
-+cp -a /sbin/blkid $INITRD_TREE/bin
-+cp -a /usr/bin/eject $INITRD_TREE/bin
-+cp -a /usr/sbin/unionctl $INITRD_TREE/bin
-+cp -a /usr/sbin/uniondbg $INITRD_TREE/bin
-+mkdir -p $INITRD_TREE/usr/share
-+cp -a /usr/bin/pcidev $INITRD_TREE/bin
-+cp -a /usr/share/pci-database $INITRD_TREE/usr/share
-+rm -f $INITRD_TREE/lib/*
-+if [ -d /lib64 ]; then
-+	lib=lib64
-+	ld_linux=ld-linux-x86-64.so.?
-+else
-+	lib=lib
-+	ld_linux=ld-linux.so.?
-+fi
-+rcopy /$lib/$ld_linux $INITRD_TREE
-+rcopy /$lib/libc.so.? $INITRD_TREE
-+rcopy /$lib/libblkid.so.? $INITRD_TREE
-+rcopy /$lib/libuuid.so.? $INITRD_TREE
-+rcopy /$lib/libz.so.? $INITRD_TREE
-+rcopy /$lib/libm.so.* $INITRD_TREE
-+rcopy /$lib/libdevmapper.so.* $INITRD_TREE
-+rcopy /$lib/libselinux.so.* $INITRD_TREE
-+rcopy /$lib/libsepol.so.* $INITRD_TREE
-+rcopy /$lib/libdl.so.* $INITRD_TREE
-+rcopy /$lib/librt.so.? $INITRD_TREE
-+rcopy /$lib/libpthread.so.? $INITRD_TREE
-+rcopy /$lib/libcrypt.so.? $INITRD_TREE
- 
- LMK="lib/modules/$KERNEL"
- 
--#necessary modules and dependency files
--mkdir -p $INITRD_TREE/$LMK/kernel/fs
--cp kernel-modules/$KERNEL/unionfs.ko* $INITRD_TREE/$LMK/kernel/fs
--cp kernel-modules/$KERNEL/squashfs.ko* $INITRD_TREE/$LMK/kernel/fs
--
--#copy filesystem modules, if not directly copied into kernel
--rcopy_ex /$LMK/kernel/lib/zlib_inflate $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/lib/zlib_deflate $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/drivers/block/loop* $INITRD_TREE 2>>$DEBUG
--
--rcopy_ex /$LMK/kernel/fs/isofs $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
-+(
-+# copy filesystem modules, if not directly copied into kernel
-+rcopy $ROOT/$LMK/kernel/lib/zlib_inflate $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/lib/zlib_deflate $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/block/loop.ko* $INITRD_TREE $ROOT
-+
-+rcopy_ex $ROOT/$LMK/kernel/fs/isofs $INITRD_TREE $ROOT
-+rcopy_ex $ROOT/$LMK/kernel/fs/isofs.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/fat $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/jbd/jbd.ko* $INITRD_TREE $ROOT
- 
- # add language support for filesystems
--rcopy_ex /$LMK/kernel/fs/nls/ $INITRD_TREE 2>>$DEBUG
--
--#usb modules
--rcopy_ex /$LMK/kernel/drivers/usb/storage $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/drivers/usb/host/ehci-hcd* $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/drivers/usb/host/ohci-hcd* $INITRD_TREE 2>>$DEBUG
--rcopy_ex /$LMK/kernel/drivers/usb/host/uhci-hcd* $INITRD_TREE 2>>$DEBUG
--
--#disk (scsi, ide, raid, pcmcia) modules
--#rcopy_ex /$LMK/kernel/drivers/scsi $INITRD_TREE
--#rcopy_ex /$LMK/kernel/drivers/ide $INITRD_TREE
--#rcopy_ex /$LMK/kernel/drivers/pcmcia $INITRD_TREE
-+rcopy $ROOT/$LMK/kernel/fs/nls/nls_cp437.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-1.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/nls/nls_iso8859-2.ko* $INITRD_TREE $ROOT
-+
-+# usb modules
-+rcopy $ROOT/$LMK/kernel/drivers/usb/core/usbcore.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/input/usbhid.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/input/usbkbd.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/storage $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/usb/storage/libusual.ko* $INITRD_TREE $ROOT
-+
-+rcopy $ROOT/$LMK/kernel/drivers/scsi/scsi_mod.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/scsi/sr_mod.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/scsi/ata_piix.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/scsi/libata.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/drivers/scsi/sata*.ko* $INITRD_TREE $ROOT
-+
-+rcopy_ex $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE $ROOT
-+
-+rcopy $ROOT/$LMK/kernel/drivers/cdrom/cdrom.ko* $INITRD_TREE $ROOT
-+
-+rcopy $ROOT/$LMK/kernel/fs/isofs/isofs $INITRD_TREE $ROOT
-+rcopy_ex $ROOT/$LMK/kernel/fs/squashfs.ko* $INITRD_TREE $ROOT
-+rcopy_ex $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/unionfs.ko* $INITRD_TREE $ROOT
-+rcopy $ROOT/$LMK/kernel/fs/unionfs/unionfs $INITRD_TREE $ROOT
-+) 2>>$DEBUG
- 
- if [ "$COMPRESS" = 1 ]; then
-    debug "gzipping kernel modules"
---- linux-live-5.5.0/initrd/linuxrc	2006-09-28 01:19:28.000000000 +0300
-+++ linux-live-5.5.0/initrd/linuxrc	2006-09-28 01:19:28.000000000 +0300
-@@ -157,5 +157,8 @@
- fstab_update $UNION
- 
-+echolog "creating /etc/modprobe.conf"
-+modprobe_update $UNION
-+
- # More likely these directories aren't there.
- # Even if they are, this won't hurt.
- # Even if they are, this won't hurt.
-@@ -182,6 +185,9 @@
- fi
- 
- header "linux live end, starting the Linux distribution"
-+
-+$DEBUGCMD
-+
- pivot_root . $INITRAMDISK
- exec $CHROOT . sbin/init <dev/console >dev/console 2>&1
- 
 --- linux-live-5.5.0/tools/liblinuxlive	2006-11-28 19:08:09.000000000 +0200
 +++ linux-live-5.5.0/tools/liblinuxlive	2006-12-21 21:50:27.000000000 +0200
 @@ -367,6 +367,13 @@
@@ -337,38 +134,29 @@
  # Find file-path on given device
  # Mounts the device in $1 and returns path if found,
  # else unmounts and exits
-@@ -434,21 +441,43 @@
- #
+@@ -742,11 +742,18 @@
  modprobe_essential_modules()
  {
+    debug_log "modprobe_essential_modules" "$*"
 +   echolog "Loading PCI modules"
 +   for m in $(modules_map pcimap); do
 +      modprobe_module $m
 +   done
-+
+ 
     echolog "starting loop device support"
-    modprobe_module loop max_loop=255
-+
+    modprobe_module loop
     echolog "starting cdrom filesystem support"
     modprobe_module isofs
 +   modprobe_module sr_mod
 +   modprobe_module ide-cd
 +   modprobe_module cdrom
-+
     echolog "starting squashfs support"
     modprobe_module squashfs
-+
-    echolog "starting unionfs support"
-    modprobe_module unionfs
-+
-    echolog "starting vfat support"
-    modprobe_module nls_cp437
-    modprobe_module nls_iso8859-1
-    modprobe_module nls_iso8859-2
-    modprobe_module vfat
-+
+    echolog "starting aufs support"
+@@ -756,6 +756,15 @@
     echolog "starting ntfs support"
-    modprobe_module ntfs
+    modprobe_module fuse # for ntfs-3g
+    modprobe_module ntfs # for ro driver
 +
 +   echolog "starting xfs support"
 +   modprobe_module xfs
@@ -378,18 +166,18 @@
 +
 +   echolog "starting ext3 support"
 +   modprobe_module ext3
-    create_block_devices
  }
  
+ # Modprobe kernel modules needed for USB masstorage devices
 @@ -464,6 +493,8 @@
-    modprobe_module ohci-hcd
-    modprobe_module uhci-hcd
+       modprobe_module uhci-hcd
+    fi
     modprobe_module usb-storage
 +   modprobe_module usbkbd
 +   modprobe_module usbhid
-    sleep $SLEEP
-    create_block_devices
  }
+ 
+ # Load drivers for PCMCIA Cardbus devices
 @@ -561,0 +593,29 @@
 +
 +# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
@@ -420,14 +208,14 @@
 +		echo $v $d
 +	done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | awk '{print $1}' | sort -u
 +}
---- linux-live-5.5.0/cd-root/isolinux.cfg	2006-05-05 23:25:22.000000000 +0300
-+++ linux-live-5.5.0/cd-root/isolinux.cfg	2006-10-03 14:03:53.000000000 +0300
+--- linux-live-5.5.0/cd-root/boot/isolinux/isolinux.cfg	2006-05-05 23:25:22.000000000 +0300
++++ linux-live-5.5.0/cd-root/boot/isolinux/isolinux.cfg	2006-10-03 14:03:53.000000000 +0300
 @@ -7,7 +7,7 @@
+ LANEL linux
+ MENU LABEL Run linux
+ KERNEL /boot/vmlinuz
+-APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=6666 root=/dev/ram0 rw
++APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=6666 root=/dev/ram0 rw
  
- label linux
- kernel boot/vmlinuz
--append vga=769 max_loop=255 initrd=boot/initrd.gz init=linuxrc load_ramdisk=1 prompt_ramdisk=0 ramdisk_size=4444 root=/dev/ram0 rw
-+append vga=769 max_loop=255 initrd=boot/initrd.gz init=linuxrc load_ramdisk=1 prompt_ramdisk=0 ramdisk_size=6444 root=/dev/ram0 rw
- 
- label memtest
- kernel boot/memtest
+ LABEL memtest
+ MENU LABEL Run Memtest utility
