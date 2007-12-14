@@ -46,7 +46,6 @@ Requires:	mawk
 Requires:	mkisofs
 Requires:	pci-database
 Requires:	sed
-Requires:	unionfs
 
 %description build
 Scripts to build your livecd with Linux Live scripts.
