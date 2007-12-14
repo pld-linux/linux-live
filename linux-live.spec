@@ -74,6 +74,7 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 install -d $RPM_BUILD_ROOT%{_libexecdir}
 %{__cp} -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
 %{__cp} build $RPM_BUILD_ROOT%{_libexecdir}
+%{__cp} install $RPM_BUILD_ROOT%{_libexecdir}
 %{__cp} -a DOC $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
@@ -109,6 +110,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}
 %{_libexecdir}/DOC
 %attr(755,root,root) %{_libexecdir}/build
+%attr(755,root,root) %{_libexecdir}/install
 %dir %{_libexecdir}/cd-root
 %{_libexecdir}/cd-root/boot
 %{_libexecdir}/cd-root/linux
