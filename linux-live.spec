@@ -1,3 +1,5 @@
+# TODO:
+# - generate romfs image instead of ext2 (our kernels don't support ext2 anyway)
 Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
