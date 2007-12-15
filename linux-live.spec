@@ -79,15 +79,14 @@ install -d $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-%{__cp} -p initrd/{cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}/initrd
+%{__cp} -p initrd/{addlocaleslib,cleanup,initrd_create,linuxrc,upd-rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
+%{__cp} -a initrd/{fuse,ntfs-3g,posixovl,rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
-# copy /bin
-install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/bin
-install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd/rootfs/lib
+ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
 
 # avoid autodeps
 # FIXME: how to copy file without preserving +x bit?
-chmod -x $RPM_BUILD_ROOT%{_libexecdir}/initrd/initrd_create
+chmod -R -x+X $RPM_BUILD_ROOT%{_libexecdir}/initrd/
 chmod -x $RPM_BUILD_ROOT%{_libdir}/liblinuxlive
 
 %clean
@@ -117,7 +116,30 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}/initrd
 %{_libexecdir}/initrd/liblinuxlive
 %{_libexecdir}/initrd/linuxrc
+%attr(755,root,root) %{_libexecdir}/initrd/addlocaleslib
 %attr(755,root,root) %{_libexecdir}/initrd/cleanup
 %attr(755,root,root) %{_libexecdir}/initrd/initrd_create
+%attr(755,root,root) %{_libexecdir}/initrd/upd-rootfs
+%dir %{_libexecdir}/initrd/fuse
+%dir %{_libexecdir}/initrd/fuse/usr
+%dir %{_libexecdir}/initrd/fuse/usr/bin
+%attr(755,root,root) %{_libexecdir}/initrd/fuse/usr/bin/*
+%dir %{_libexecdir}/initrd/fuse/usr/lib
+%attr(755,root,root) %{_libexecdir}/initrd/fuse/usr/lib/*.so*
+%dir %{_libexecdir}/initrd/ntfs-3g
+%dir %{_libexecdir}/initrd/ntfs-3g/usr
+%dir %{_libexecdir}/initrd/ntfs-3g/usr/bin
+%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/bin/*
+%dir %{_libexecdir}/initrd/ntfs-3g/usr/lib
+%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/lib/*.so*
+%dir %{_libexecdir}/initrd/posixovl
+%dir %{_libexecdir}/initrd/posixovl/usr
+%dir %{_libexecdir}/initrd/posixovl/usr/bin
+%attr(755,root,root) %{_libexecdir}/initrd/posixovl/usr/bin/*
 %dir %{_libexecdir}/initrd/rootfs
 %dir %{_libexecdir}/initrd/rootfs/bin
+%attr(755,root,root) %{_libexecdir}/initrd/rootfs/bin/*
+%{_libexecdir}/initrd/rootfs/etc
+%dir %{_libexecdir}/initrd/rootfs/lib
+%attr(755,root,root) %{_libexecdir}/initrd/rootfs/lib/*.so*
+%{_libexecdir}/initrd/rootfs/usr
