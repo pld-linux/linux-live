@@ -228,3 +228,26 @@
  
  LABEL memtest
  MENU LABEL Run Memtest utility
+--- linux-live-6.1.5/install~	2007-05-14 18:50:44.000000000 +0200
++++ linux-live-6.1.5/install	2007-12-15 22:00:36.196311512 +0100
+@@ -15,18 +15,8 @@
+ if [ "$N" = "build" ]; then
+    N=install
+ else
+-   . ./.config || exit 1
++   . /etc/linux-live/config || exit 1
+    if [ "$1" ]; then ROOT="$1"; fi
+ fi
+ 
+-if [ "$N" != "uninstall" ]; then
+-   mkdir -p $ROOT/usr/bin
+-   mkdir -p $ROOT/usr/lib
+-   ls -1 ./tools | egrep -v "^lib" | while read FILE; do cp ./tools/$FILE $ROOT/usr/bin; done
+-   cat ./tools/liblinuxlive | sed -r 's/^LIVECDNAME=.*/LIVECDNAME="'$LIVECDNAME'"/' > $ROOT/usr/lib/liblinuxlive
+-else
+-   ls -1 ./tools | egrep -v "^lib" | while read FILE; do rm -v $ROOT/usr/bin/$FILE; done
+-   ls -1 ./tools | egrep "^lib" | while read FILE; do rm -v $ROOT/usr/lib/$FILE; done
+-fi
+-
+-echo "Linux Live scripts were $N""ed successfuly in $1/"
++# No need for installation in PLD
