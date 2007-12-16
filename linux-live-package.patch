@@ -259,6 +259,32 @@
 +# No need for installation in PLD
 --- linux-live-6.1.5/initrd/initrd_create~	2007-12-16 16:34:01.000000000 +0100
 +++ linux-live-6.1.5/initrd/initrd_create	2007-12-16 16:36:21.789095746 +0100
+@@ -141,6 +141,7 @@
+ ln -s busybox $INITRD_TREE/bin/ls
+ ln -s busybox $INITRD_TREE/bin/head
+ ln -s busybox $INITRD_TREE/bin/cat
++ln -s busybox $INITRD_TREE/bin/cut
+ ln -s busybox $INITRD_TREE/bin/grep
+ ln -s busybox $INITRD_TREE/bin/sleep
+ ln -s busybox $INITRD_TREE/bin/sed
+@@ -152,6 +153,9 @@
+ 
+ # necessary modules and dependency files
+ mkdir -p $INITRD_TREE/$LMK/kernel/fs
++rcopy $ROOT/$LMK/kernel/drivers/cdrom $INITRD_TREE
++rcopy $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE
++rcopy $ROOT/$LMK/kernel/drivers/ide/pci $INITRD_TREE
+ rcopy $ROOT/$LMK/kernel/fs/aufs $INITRD_TREE
+ rcopy $ROOT/$LMK/kernel/fs/squashfs $INITRD_TREE
+ 
+@@ -161,6 +165,7 @@
+ rcopy_ex $ROOT/$LMK/kernel/drivers/block/loop.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/fuse/fuse.* $INITRD_TREE 2>>$DEBUG
+ 
++rcopy_ex $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/isofs $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG--- linux-live-6.1.5/initrd/linuxrc	2007-09-10 16:44:18.000000000 +0200
 @@ -200,44 +200,30 @@
  chmod ago-x $INITRD_TREE/usr.lzm
  rm -Rf $INITRD_TREE/usr/*
@@ -298,7 +324,7 @@
 +debug "building $MOUNTDIR"
 +CUR=$(pwd)
 +cd $MOUNTDIR
-+ln -s /bin/init init
++cp linuxrc init
 +find . | cpio -H newc -o > "$CUR/$INITRDIMG"
 +cd $CUR
  
@@ -311,3 +337,42 @@
  
  debug "deleting directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
+--- linux-live/initrd/linuxrc	2007-12-16 19:20:07.382382548 +0100
++++ linux-live/initrd/linuxrc	2007-12-16 19:20:07.382382548 +0100
+@@ -223,10 +223,10 @@
+ cp -fdR /dev .
+ 
+ # find chroot and init
+-if [ -x bin/chroot ]; then  CHROOT=/bin/chroot; fi
+-if [ -x sbin/chroot ]; then  CHROOT=/sbin/chroot; fi
+-if [ -x usr/bin/chroot ]; then  CHROOT=/usr/bin/chroot; fi
+-if [ -x usr/sbin/chroot ]; then CHROOT=/usr/sbin/chroot; fi
++if [ -x bin/chroot ]; then  CHROOT=bin/chroot; fi
++if [ -x sbin/chroot ]; then  CHROOT=sbin/chroot; fi
++if [ -x usr/bin/chroot ]; then  CHROOT=usr/bin/chroot; fi
++if [ -x usr/sbin/chroot ]; then CHROOT=usr/sbin/chroot; fi
+ if [ "$CHROOT" = "" ]; then fatal "Can't find executable chroot command"; fi
+ 
+ if [ -x bin/init ]; then INIT=bin/init; fi
+@@ -238,18 +238,9 @@
+ header "linux live end, starting the Linux distribution"
+ mount -n -o remount,ro aufs .
+ 
+-# We will copy init from the distro to initrd (there should be 2MB free)
+-# This allows us to use the cleanup script during reboot, as init will be
+-# started from memory and not from the union and /union will not be busy.
+-
+-cp -af $INIT /bin
+-if [ $? -eq 0 ]; then
+-   pivot_root . $INITRAMDISK
+-   exec $CHROOT . $INITRAMDISK/bin/init <dev/console >dev/console 2>&1
+-else # If copying fails, start init directly.
+-   pivot_root . $INITRAMDISK
+-   exec $CHROOT . $INIT <dev/console >dev/console 2>&1
+-fi
++# Should do switch_root but not supported by this busybox
++pivot_root . $INITRAMDISK
++exec $CHROOT . $INIT <dev/console >dev/console 2>&1
+ 
+ header "!!ERROR!!"
+ fatal "You are not supposed to be here, something went wrong!"
