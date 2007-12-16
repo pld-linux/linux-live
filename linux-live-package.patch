@@ -187,7 +187,10 @@
  }
  
  # Load drivers for PCMCIA Cardbus devices
-@@ -561,0 +593,29 @@
+@@ -561,6 +593,35 @@
+    mdev -s
+    echo /bin/mdev > /proc/sys/kernel/hotplug
+ }
 +
 +# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
 +# $1 = root directory (union)
@@ -217,6 +220,9 @@
 +		echo $v $d
 +	done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | awk '{print $1}' | sort -u
 +}
+ 
+ # Modprobe kernel modules needed for the LiveCD
+ #
 --- linux-live-5.5.0/cd-root/boot/isolinux/isolinux.cfg	2006-05-05 23:25:22.000000000 +0300
 +++ linux-live-5.5.0/cd-root/boot/isolinux/isolinux.cfg	2006-10-03 14:03:53.000000000 +0300
 @@ -7,7 +7,7 @@
@@ -251,3 +257,57 @@
 -
 -echo "Linux Live scripts were $N""ed successfuly in $1/"
 +# No need for installation in PLD
+--- linux-live-6.1.5/initrd/initrd_create~	2007-12-16 16:34:01.000000000 +0100
++++ linux-live-6.1.5/initrd/initrd_create	2007-12-16 16:36:21.789095746 +0100
+@@ -200,44 +200,31 @@
+ chmod ago-x $INITRD_TREE/usr.lzm
+ rm -Rf $INITRD_TREE/usr/*
+ 
+-debug "creating empty image file for initrd"
+-dd if=/dev/zero of=$INITRDIMG bs=1024 count=$RAM0SIZE >>$DEBUG 2>&1
+-
+-debug "making filesystem"
+-mkfs -t ext2 -F -m 0 -b 1024 -i 1024 $INITRDIMG >>$DEBUG 2>&1
+-tune2fs -i 120m $INITRDIMG >>$DEBUG 2>&1
+-
+ debug "creating empty directory $MOUNTDIR"
+ rm -Rf $MOUNTDIR
+ mkdir $MOUNTDIR
+ 
+-debug "mounting $INITRDIMG to it"
+-modprobe loop 2>>$DEBUG
+-mount -o loop -t ext2 $INITRDIMG $MOUNTDIR
+-if [ "$?" -ne 0 ]; then
+-   echo "Error mounting initrd! Not enough free loop devices?"
+-   exit 1
+-fi
+-
+ debug "copying content of $INITRD_TREE to $MOUNTDIR"
+ rmdir $MOUNTDIR/lost+found
+ cp -R --preserve $INITRD_TREE/* $MOUNTDIR 2>/dev/null
+ if [ $? -ne 0 ]; then
+    debug "error copying data to mounted initrd. Increase RAM0SIZE"
+    echo "Not enough free space in initrd. Edit .config and increase RAM0SIZE !"
+-   umount $MOUNTDIR
+-   rm $INITRDIMG
+    exit 1
+ fi
+ 
+-debug "unmounting $MOUNTDIR"
+-umount $MOUNTDIR
++debug "building $MOUNTDIR"
++CUR=$(pwd)
++cd $MOUNTDIR
++ln -s /bin/init init
++find . | cpio -H newc -o > "$CUR/$INITRDIMG"
++cd $CUR
+ 
+ debug "gzipping $INITRDIMG"
+ gzip --best $INITRDIMG
+ 
+ debug "deleting directory $MOUNTDIR"
+-rmdir $MOUNTDIR
++rm -Rf $MOUNTDIR
+ 
+ debug "deleting directory $INITRD_TREE"
+ rm -Rf $INITRD_TREE
