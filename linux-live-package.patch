@@ -259,7 +259,7 @@
 +# No need for installation in PLD
 --- linux-live-6.1.5/initrd/initrd_create~	2007-12-16 16:34:01.000000000 +0100
 +++ linux-live-6.1.5/initrd/initrd_create	2007-12-16 16:36:21.789095746 +0100
-@@ -200,44 +200,31 @@
+@@ -200,44 +200,30 @@
  chmod ago-x $INITRD_TREE/usr.lzm
  rm -Rf $INITRD_TREE/usr/*
  
@@ -283,7 +283,7 @@
 -fi
 -
  debug "copying content of $INITRD_TREE to $MOUNTDIR"
- rmdir $MOUNTDIR/lost+found
+-rmdir $MOUNTDIR/lost+found
  cp -R --preserve $INITRD_TREE/* $MOUNTDIR 2>/dev/null
  if [ $? -ne 0 ]; then
     debug "error copying data to mounted initrd. Increase RAM0SIZE"
