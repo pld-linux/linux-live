@@ -241,7 +241,7 @@
 +		# pci module         vendor     device     subvendor  subdevice  class      class_mask driver_data
 +		# nvidia               0x000010de 0xffffffff 0xffffffff 0xffffffff 0x00030200 0xffffffff 0x0
 +		echo $v $d
-+	done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | awk '{print $1}' | sort -u
++	done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | cut -d' ' -f1 | sort -u
 +}
  
  # Modprobe kernel modules needed for the LiveCD
