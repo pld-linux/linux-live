@@ -19,8 +19,8 @@
  
  # If the writable branch (used for changes) doesn't support symlinks or if it
  # doesn't handle chmod attributes well, overmount it using the posix overlay 
---- linux-live/build	2006-10-13 15:33:24.000000000 +0300
-+++ linux-live-5.5.0/build	2006-10-13 18:25:50.000000000 +0300
+--- linux-live-5.5.0/build	2006-10-13 18:25:50.000000000 +0300
++++ /usr/lib/linux-live/build	2007-12-16 17:40:02.000000000 +0200
 @@ -10,8 +10,8 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
@@ -58,6 +58,29 @@
  cp -R DOC/LICENSE $CDDATA/$LIVECDNAME
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
+@@ -78,9 +82,14 @@
+-cd $CDDATA/$LIVECDNAME
+ echo "--------done----------"
+-echo
+-echo "* run $CDDATA/$LIVECDNAME/make_iso.bat to create ISO image"
+-echo "* or copy content of $CDDATA to your USB device"
+-echo "and run ./boot/bootinst.sh (from the device!) to setup boot sector"
+-echo
+-echo "Now press Enter..."
+-read junk
++
++if [ "$ISO_IMAGE" ]; then
++	cd $CDDATA/$LIVECDNAME
++	sh make_iso.sh "$ISO_IMAGE"
++else
++	echo
++	echo "* run $CDDATA/$LIVECDNAME/make_iso.sh to create ISO image"
++	echo "* or copy content of $CDDATA to your USB device"
++	echo "and run ./boot/bootinst.sh (from the device!) to setup boot sector"
++	echo
++	echo "Now press Enter..."
++	read junk
++fi
 --- linux-live-5.5.0/initrd/initrd_create	2006-10-17 19:42:57.000000000 +0300
 +++ linux-live-5.5.0/initrd/initrd_create	2006-12-21 21:36:56.000000000 +0200
 @@ -3,7 +3,7 @@
@@ -376,3 +399,18 @@
  
  header "!!ERROR!!"
  fatal "You are not supposed to be here, something went wrong!"
+--- ./cd-root/linux/make_iso.sh	2007-05-14 20:03:33.000000000 +0300
++++ /usr/lib/linux-live/cd-root/linux/make_iso.sh	2007-12-16 18:11:49.000000000 +0200
+@@ -22,6 +22,12 @@
+    if [ "$ISONAME" = "" ]; then ISONAME="$SUGGEST"; fi
+ fi
+ 
++echo "Writing ISO image to $ISONAME"
+ mkisofs -o "$ISONAME" -v -J -R -D -A "$CDLABEL" -V "$CDLABEL" \
+ -no-emul-boot -boot-info-table -boot-load-size 4 \
+ -b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot ../.
++
++if [ $? != 0 ]; then
++	echo "Error writing ISO image to $ISONAME"
++	exit 1
++fi
