@@ -2,11 +2,12 @@ Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
 Version:	6.1.5
-Release:	0.1
+Release:	0.2
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
 # Source0-md5:	9d3639408907a7b98012e0bdcff9c0d1
+Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
 Requires:	squashfs
@@ -17,6 +18,9 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_libexecdir	%{_libdir}/%{name}
 %define		_sysconfdir	/etc/%{name}
 %define		__cp	cp --preserve=timestamps
+
+# do not touch initrd files
+%define		_noautostrip	.*/cd-root/.*
 
 %description
 Linux Live is a set of shell scripts which allows you to create own
@@ -64,6 +68,7 @@ find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
 rm -rf $RPM_BUILD_ROOT
 # tools for livecd
 install -d $RPM_BUILD_ROOT{%{_libdir},%{_bindir},%{_sbindir}}
+install %{SOURCE1} $RPM_BUILD_ROOT%{_sbindir}/linux-live-build
 %{__cp} -p tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
 %{__cp} -a tools/{deb2lzm,dir2lzm,lzm2dir,tgz2lzm} $RPM_BUILD_ROOT%{_bindir}
 %{__cp} -a tools/uselivemod $RPM_BUILD_ROOT%{_sbindir}
@@ -104,6 +109,7 @@ rm -rf $RPM_BUILD_ROOT
 %files build
 %defattr(644,root,root,755)
 %doc DOC/changelog.txt DOC/requirements.txt
+%attr(755,root,root) %{_sbindir}/linux-live-build
 %dir %{_sysconfdir}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
