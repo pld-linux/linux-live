@@ -1,12 +1,12 @@
 Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
-Version:	6.1.5
+Version:	6.2.4
 Release:	0.2
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
-# Source0-md5:	9d3639408907a7b98012e0bdcff9c0d1
+# Source0-md5:	1d14e9323bb98ef5621e0c7f7755cbd0
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
@@ -59,7 +59,7 @@ Skrypty do tworzenia własnego livecd przy użyciu skryptów Linux Live.
 
 %prep
 %setup -q
-%patch0 -p1
+#%patch0 -p1
 
 rm -rf initrd/kernel-modules/2.6.16
 find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
