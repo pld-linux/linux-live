@@ -1,6 +1,6 @@
 diff -urN linux-live-6.2.4.orig/build linux-live-6.2.4/build
 --- linux-live-6.2.4.orig/build	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/build	2008-08-15 22:05:24.492408793 +0200
++++ linux-live-6.2.4/build	2008-08-15 22:42:45.670401526 +0200
 @@ -10,8 +10,8 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
@@ -25,20 +25,19 @@ diff -urN linux-live-6.2.4.orig/build linux-live-6.2.4/build
  if [ "$(ls $VMLINUZ 2>>$DEBUG)" = "" ]; then echo "cannot find $VMLINUZ"; exit 1; fi
  
  header "Creating LiveCD from your Linux"
-@@ -50,7 +50,11 @@
+@@ -50,7 +50,10 @@
  
  mkdir -p $CDDATA/$LIVECDNAME
  cp -R cd-root/linux/* $CDDATA/$LIVECDNAME
 -cp tools/* $CDDATA/$LIVECDNAME/tools
 +cp /usr/bin/{deb2lzm,dir2lzm,lzm2dir,tgz2lzm} $CDDATA/$LIVECDNAME/tools
 +cp /usr/lib/liblinuxlive $CDDATA/$LIVECDNAME/tools
-+cp /usr/sbin/uselivemod $CDDATA/$LIVECDNAME/tools
 +cp /sbin/mksquashfs $CDDATA/$LIVECDNAME/tools
 +cp /sbin/unsquashfs $CDDATA/$LIVECDNAME/tools
  cp -R DOC/LICENSE $CDDATA/$LIVECDNAME
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
-@@ -82,12 +86,17 @@
+@@ -82,12 +85,17 @@
      fi
  done
  
@@ -66,7 +65,7 @@ diff -urN linux-live-6.2.4.orig/build linux-live-6.2.4/build
 +fi
 diff -urN linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
 --- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 22:05:24.493407244 +0200
++++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 22:42:45.670401526 +0200
 @@ -5,7 +5,7 @@
  LABEL linux
  MENU LABEL Run linux
@@ -78,7 +77,7 @@ diff -urN linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.
  MENU LABEL Run Memtest utility
 diff -urN linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
 --- linux-live-6.2.4.orig/cd-root/linux/make_iso.sh	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-08-15 22:05:24.493407244 +0200
++++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-08-15 22:42:45.670401526 +0200
 @@ -12,10 +12,11 @@
    exit
  fi
@@ -101,7 +100,7 @@ diff -urN linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-ro
 +-b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot "$DIR"
 diff -urN linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
 --- linux-live-6.2.4.orig/.config	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/.config	2008-08-15 22:27:43.371409126 +0200
++++ linux-live-6.2.4/.config	2008-08-15 22:42:45.670401526 +0200
 @@ -6,16 +6,12 @@
  # Live CD Name. Defaults to 'mylinux'; you should change it to your own
  # name if you wish your own branding. Eg. Slax changes it to 'slax'
@@ -138,7 +137,7 @@ diff -urN linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
  # doesn't handle chmod attributes well, overmount it using the posix overlay 
 diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
 --- linux-live-6.2.4.orig/initrd/initrd_create	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/initrd_create	2008-08-15 22:05:24.494395149 +0200
++++ linux-live-6.2.4/initrd/initrd_create	2008-08-15 22:42:45.672402060 +0200
 @@ -3,7 +3,7 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -262,7 +261,16 @@ diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  rm -Rf $INITRD_TREE
 diff -urN linux-live-6.2.4.orig/initrd/liblinuxlive linux-live-6.2.4/initrd/liblinuxlive
 --- linux-live-6.2.4.orig/initrd/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
-+++ linux-live-6.2.4/initrd/liblinuxlive	2008-08-15 22:05:24.494395149 +0200
++++ linux-live-6.2.4/initrd/liblinuxlive	2008-08-15 22:43:24.185395332 +0200
+@@ -404,7 +404,7 @@
+ {
+    debug_log "create_module" "$*"
+    rm -f "$2" # overwrite, never append to existing file
+-   mksquashfs "$1" "$2" -b 256K -lzmadic 256K $3 $4 $5 $6 $7 $8 $9>/dev/null
++   mksquashfs "$1" "$2" $3 $4 $5 $6 $7 $8 $9>/dev/null
+    if [ $? -ne 0 ]; then return 1; fi
+    chmod oga-wx "$2" # remove execute attrib
+ }
 @@ -596,6 +596,13 @@
     list_partition_devices
  }
@@ -341,7 +349,7 @@ diff -urN linux-live-6.2.4.orig/initrd/liblinuxlive linux-live-6.2.4/initrd/libl
  # Load drivers for PCMCIA CardBus devices
 diff -urN linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
 --- linux-live-6.2.4.orig/initrd/linuxrc	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/linuxrc	2008-08-15 22:05:24.495395066 +0200
++++ linux-live-6.2.4/initrd/linuxrc	2008-08-15 22:42:45.672402060 +0200
 @@ -250,18 +250,9 @@
  
  mount -n -o remount,ro aufs .
@@ -366,7 +374,7 @@ diff -urN linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
  fatal "You are not supposed to be here, something went wrong!"
 diff -urN linux-live-6.2.4.orig/install linux-live-6.2.4/install
 --- linux-live-6.2.4.orig/install	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/install	2008-08-15 22:05:24.495395066 +0200
++++ linux-live-6.2.4/install	2008-08-15 22:42:45.673395203 +0200
 @@ -15,18 +15,7 @@
  if [ "$N" = "build" ]; then
     N=install
@@ -389,7 +397,7 @@ diff -urN linux-live-6.2.4.orig/install linux-live-6.2.4/install
 -echo "Linux Live scripts were $N""ed successfuly in $1/"
 diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
 --- linux-live-6.2.4.orig/tools/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
-+++ linux-live-6.2.4/tools/liblinuxlive	2008-08-15 22:05:24.496395473 +0200
++++ linux-live-6.2.4/tools/liblinuxlive	2008-08-15 22:42:45.673395203 +0200
 @@ -596,6 +596,13 @@
     list_partition_devices
  }
