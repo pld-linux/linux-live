@@ -463,26 +463,3 @@ diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
  }
  
  # Load drivers for PCMCIA CardBus devices
-diff -urN linux-live-6.2.4.orig/uninstall linux-live-6.2.4/uninstall
---- linux-live-6.2.4.orig/uninstall	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/uninstall	2008-08-15 21:32:25.221395472 +0200
-@@ -15,18 +15,7 @@
- if [ "$N" = "build" ]; then
-    N=install
- else
--   . ./.config || exit 1
-+   . /etc/linux-live/config || exit 1
-    if [ "$1" ]; then ROOT="$1"; fi
- fi
- 
--if [ "$N" != "uninstall" ]; then
--   mkdir -p $ROOT/usr/bin
--   mkdir -p $ROOT/usr/lib
--   ls -1 ./tools | egrep -v "^lib" | while read FILE; do cp ./tools/$FILE $ROOT/usr/bin; done
--   cat ./tools/liblinuxlive | sed -r 's/^LIVECDNAME=.*/LIVECDNAME="'$LIVECDNAME'"/' > $ROOT/usr/lib/liblinuxlive
--else
--   ls -1 ./tools | egrep -v "^lib" | while read FILE; do rm -v $ROOT/usr/bin/$FILE; done
--   ls -1 ./tools | egrep "^lib" | while read FILE; do rm -v $ROOT/usr/lib/$FILE; done
--fi
--
--echo "Linux Live scripts were $N""ed successfuly in $1/"
