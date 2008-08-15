@@ -71,7 +71,6 @@ install -d $RPM_BUILD_ROOT{%{_libdir},%{_bindir},%{_sbindir}}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sbindir}/linux-live-build
 %{__cp} -p tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
 %{__cp} -a tools/{deb2lzm,dir2lzm,lzm2dir,tgz2lzm} $RPM_BUILD_ROOT%{_bindir}
-%{__cp} -a tools/uselivemod $RPM_BUILD_ROOT%{_sbindir}
 
 # tools for building livecd
 install -d $RPM_BUILD_ROOT%{_sysconfdir}
@@ -103,7 +102,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/dir2lzm
 %attr(755,root,root) %{_bindir}/lzm2dir
 %attr(755,root,root) %{_bindir}/tgz2lzm
-%attr(755,root,root) %{_sbindir}/uselivemod
 %{_libdir}/liblinuxlive
 
 %files build
