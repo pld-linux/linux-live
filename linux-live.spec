@@ -59,7 +59,7 @@ Skrypty do tworzenia własnego livecd przy użyciu skryptów Linux Live.
 
 %prep
 %setup -q
-#%patch0 -p1
+%patch0 -p1
 
 rm -rf initrd/kernel-modules/2.6.16
 find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
