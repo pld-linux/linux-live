@@ -2,7 +2,7 @@ Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
 Version:	6.2.4
-Release:	0.2
+Release:	1
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
