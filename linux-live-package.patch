@@ -259,94 +259,6 @@ diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  
  debug "deleting directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
-diff -urN linux-live-6.2.4.orig/initrd/liblinuxlive linux-live-6.2.4/initrd/liblinuxlive
---- linux-live-6.2.4.orig/initrd/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
-+++ linux-live-6.2.4/initrd/liblinuxlive	2008-08-15 22:43:24.185395332 +0200
-@@ -404,7 +404,7 @@
- {
-    debug_log "create_module" "$*"
-    rm -f "$2" # overwrite, never append to existing file
--   mksquashfs "$1" "$2" -b 256K -lzmadic 256K $3 $4 $5 $6 $7 $8 $9>/dev/null
-+   mksquashfs "$1" "$2" $3 $4 $5 $6 $7 $8 $9>/dev/null
-    if [ $? -ne 0 ]; then return 1; fi
-    chmod oga-wx "$2" # remove execute attrib
- }
-@@ -596,6 +596,13 @@
-    list_partition_devices
- }
- 
-+# List all network drivers
-+#
-+list_network_drivers()
-+{
-+   pcidev /m net
-+}
-+
- # Format mountdir for device. This function used to append _cdrom or _removable
- # suffix to the directory name so KDE was able to assign a nice icon for evey
- # device, but this should be done using HAL in KDE nowadays, so we do not
-@@ -732,16 +739,52 @@
-    echo /bin/mdev > /proc/sys/kernel/hotplug # use mdev as a hotplug handler
- }
- 
-+# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
-+# $1 = root directory (union)
-+#
-+modprobe_update()
-+{
-+   i=0
-+   > $1/etc/modprobe.conf
-+   for drv in $(list_network_drivers); do
-+      echo "alias eth$i $drv" >> $1/etc/modprobe.conf
-+      i=$((i+1))
-+   done
-+}
-+
-+# list all pci devices recognized on this system
-+# $1 = pcimap | usbmap
-+modules_map()
-+{
-+   t=$1
-+   d=/proc/bus/pci/devices
-+   k=`uname -r`
-+   while read a id b; do
-+      v=0x0000${id%????}
-+      d=0x0000${id#????}
-+      # pci module         vendor     device     subvendor  subdevice  class      class_mask driver_data
-+      # nvidia               0x000010de 0xffffffff 0xffffffff 0xffffffff 0x00030200 0xffffffff 0x0
-+      echo $v $d
-+   done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | cut -d' ' -f1 | sort -u
-+}
-+
- # Modprobe kernel modules needed for the LiveCD
- #
- modprobe_essential_modules()
- {
-    debug_log "modprobe_essential_modules" "$*"
- 
-+   echolog "Loading PCI modules"
-+   for m in $(modules_map pcimap); do
-+      modprobe_module $m
-+   done
-    echolog "starting loop device support"
-    modprobe_module loop
-    echolog "starting cdrom filesystem support"
-    modprobe_module isofs
-+   modprobe_module sr_mod
-+   modprobe_module ide-cd
-+   modprobe_module cdrom
-    echolog "starting squashfs support"
-    modprobe_module squashfs
-    echolog "starting aufs support with brs=1"
-@@ -784,6 +827,8 @@
-       modprobe_module uhci-hcd
-    fi
-    modprobe_module usb-storage
-+   modprobe_module usbkbd
-+   modprobe_module usbhid
- }
- 
- # Load drivers for PCMCIA CardBus devices
 diff -urN linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
 --- linux-live-6.2.4.orig/initrd/linuxrc	2008-08-15 21:18:01.185408216 +0200
 +++ linux-live-6.2.4/initrd/linuxrc	2008-08-15 22:42:45.672402060 +0200
@@ -398,6 +310,15 @@ diff -urN linux-live-6.2.4.orig/install linux-live-6.2.4/install
 diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
 --- linux-live-6.2.4.orig/tools/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
 +++ linux-live-6.2.4/tools/liblinuxlive	2008-08-15 22:42:45.673395203 +0200
+@@ -404,7 +404,7 @@
+ {
+    debug_log "create_module" "$*"
+    rm -f "$2" # overwrite, never append to existing file
+-   mksquashfs "$1" "$2" -b 256K -lzmadic 256K $3 $4 $5 $6 $7 $8 $9>/dev/null
++   mksquashfs "$1" "$2" $3 $4 $5 $6 $7 $8 $9>/dev/null
+    if [ $? -ne 0 ]; then return 1; fi
+    chmod oga-wx "$2" # remove execute attrib
+ }
 @@ -596,6 +596,13 @@
     list_partition_devices
  }
