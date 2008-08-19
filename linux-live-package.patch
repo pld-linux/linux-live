@@ -1,6 +1,6 @@
-diff -urN linux-live-6.2.4.orig/build linux-live-6.2.4/build
+diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
 --- linux-live-6.2.4.orig/build	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/build	2008-08-15 22:42:45.670401526 +0200
++++ linux-live-6.2.4/build	2008-08-19 22:27:40.960579005 +0200
 @@ -10,8 +10,8 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
@@ -63,21 +63,21 @@ diff -urN linux-live-6.2.4.orig/build linux-live-6.2.4/build
 +    echo "Now press Enter..."
 +    read junk
 +fi
-diff -urN linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
+diff -ur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
 --- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 22:42:45.670401526 +0200
++++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-08-19 22:27:40.960579005 +0200
 @@ -5,7 +5,7 @@
  LABEL linux
  MENU LABEL Run linux
  KERNEL /boot/vmlinuz
 -APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=6666 root=/dev/ram0 rw
-+APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=9666 root=/dev/ram0 rw
++APPEND initrd=/boot/initrd.gz ramdisk_size=9666 root=/dev/ram0 rw
  
  LABEL memtest86
  MENU LABEL Run Memtest utility
-diff -urN linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
+diff -ur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
 --- linux-live-6.2.4.orig/cd-root/linux/make_iso.sh	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-08-15 22:42:45.670401526 +0200
++++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-08-19 22:27:40.960579005 +0200
 @@ -12,10 +12,11 @@
    exit
  fi
@@ -98,9 +98,9 @@ diff -urN linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-ro
  -no-emul-boot -boot-info-table -boot-load-size 4 \
 --b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot ../.
 +-b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot "$DIR"
-diff -urN linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
+diff -ur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
 --- linux-live-6.2.4.orig/.config	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/.config	2008-08-15 22:42:45.670401526 +0200
++++ linux-live-6.2.4/.config	2008-08-19 22:27:40.960579005 +0200
 @@ -6,16 +6,12 @@
  # Live CD Name. Defaults to 'mylinux'; you should change it to your own
  # name if you wish your own branding. Eg. Slax changes it to 'slax'
@@ -135,9 +135,9 @@ diff -urN linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
  
  # If the writable branch (used for changes) doesn't support symlinks or if it
  # doesn't handle chmod attributes well, overmount it using the posix overlay 
-diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
+diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
 --- linux-live-6.2.4.orig/initrd/initrd_create	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/initrd_create	2008-08-15 22:42:45.672402060 +0200
++++ linux-live-6.2.4/initrd/initrd_create	2008-08-19 22:28:03.111409558 +0200
 @@ -3,7 +3,7 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -207,7 +207,27 @@ diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  debug "creating empty directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
  mkdir $INITRD_TREE
-@@ -190,44 +190,30 @@
+@@ -150,6 +150,7 @@
+ rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/fs/jbd $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
+@@ -164,8 +165,11 @@
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
+ 
+ # pci modules
++rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/acpi $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/cdrom $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/ata $INITRD_TREE 2>>$DEBUG
+ 
+ # pcmcia modules
+ rcopy_ex $ROOT/$LMK/kernel/drivers/pcmcia/pcmcia_core.* $INITRD_TREE 2>>$DEBUG
+@@ -190,44 +194,30 @@
  chmod ago-x $INITRD_TREE/usr.lzm
  rm -Rf $INITRD_TREE/usr/*
  
@@ -259,9 +279,9 @@ diff -urN linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  
  debug "deleting directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
-diff -urN linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
+diff -ur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
 --- linux-live-6.2.4.orig/initrd/linuxrc	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/linuxrc	2008-08-15 22:42:45.672402060 +0200
++++ linux-live-6.2.4/initrd/linuxrc	2008-08-19 22:27:40.963906593 +0200
 @@ -250,18 +250,9 @@
  
  mount -n -o remount,ro aufs .
@@ -284,9 +304,9 @@ diff -urN linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
  
  header "!!ERROR!!"
  fatal "You are not supposed to be here, something went wrong!"
-diff -urN linux-live-6.2.4.orig/install linux-live-6.2.4/install
+diff -ur linux-live-6.2.4.orig/install linux-live-6.2.4/install
 --- linux-live-6.2.4.orig/install	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/install	2008-08-15 22:42:45.673395203 +0200
++++ linux-live-6.2.4/install	2008-08-19 22:27:40.963906593 +0200
 @@ -15,18 +15,7 @@
  if [ "$N" = "build" ]; then
     N=install
@@ -307,9 +327,9 @@ diff -urN linux-live-6.2.4.orig/install linux-live-6.2.4/install
 -fi
 -
 -echo "Linux Live scripts were $N""ed successfuly in $1/"
-diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
+diff -ur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
 --- linux-live-6.2.4.orig/tools/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
-+++ linux-live-6.2.4/tools/liblinuxlive	2008-08-15 22:42:45.673395203 +0200
++++ linux-live-6.2.4/tools/liblinuxlive	2008-08-19 22:27:53.744753181 +0200
 @@ -404,7 +404,7 @@
  {
     debug_log "create_module" "$*"
@@ -333,7 +353,7 @@ diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
  # Format mountdir for device. This function used to append _cdrom or _removable
  # suffix to the directory name so KDE was able to assign a nice icon for evey
  # device, but this should be done using HAL in KDE nowadays, so we do not
-@@ -732,16 +739,52 @@
+@@ -732,16 +739,53 @@
     echo /bin/mdev > /proc/sys/kernel/hotplug # use mdev as a hotplug handler
  }
  
@@ -380,13 +400,14 @@ diff -urN linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
     modprobe_module loop
     echolog "starting cdrom filesystem support"
     modprobe_module isofs
++   modprobe_module ahci
 +   modprobe_module sr_mod
 +   modprobe_module ide-cd
 +   modprobe_module cdrom
     echolog "starting squashfs support"
     modprobe_module squashfs
     echolog "starting aufs support with brs=1"
-@@ -784,6 +827,8 @@
+@@ -784,6 +828,8 @@
        modprobe_module uhci-hcd
     fi
     modprobe_module usb-storage
