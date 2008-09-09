@@ -4,7 +4,7 @@ Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
 Version:	6.2.4
-Release:	3
+Release:	4
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
@@ -22,8 +22,8 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		__cp	cp --preserve=timestamps
 
 # do not touch initrd files
-%define		_noautostrip	.*/cd-root/.*
 %define		_noautoprov	lib.*\.so.* ld-linux.*\.so.*
+%define		_noautostrip	%{_noautoprov}
 %define		_noautoreq	%{_noautoprov}
 
 %description
