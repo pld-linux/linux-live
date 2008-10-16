@@ -87,15 +87,10 @@ install -d $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-%{__cp} -p initrd/{addlocaleslib,cleanup,initrd_create,linuxrc,upd-rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
+install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc,upd-rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 %{__cp} -a initrd/{fuse,ntfs-3g,posixovl,rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
-
-# avoid autodeps
-# FIXME: how to copy file without preserving +x bit?
-chmod -R -x+X $RPM_BUILD_ROOT%{_libexecdir}/initrd/
-chmod -x $RPM_BUILD_ROOT%{_libdir}/liblinuxlive
 
 %clean
 rm -rf $RPM_BUILD_ROOT
