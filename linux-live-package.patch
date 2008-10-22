@@ -1,7 +1,7 @@
-diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
---- linux-live-6.2.4.orig/build	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/build	2008-08-19 22:27:40.960579005 +0200
-@@ -10,8 +10,8 @@
+diff -Nur linux-live-6.2.4.orig/build linux-live-6.2.4/build
+--- linux-live-6.2.4.orig/build	2008-02-14 11:52:22.000000000 +0100
++++ linux-live-6.2.4/build	2008-10-22 00:01:37.000000000 +0200
+@@ -10,8 +10,11 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
  
@@ -9,10 +9,13 @@ diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
 -. ./.config || exit 1
 +. /usr/lib/liblinuxlive || exit 1
 +. /etc/linux-live/config || exit 1
++
++# You may override some variables by your own config
++[ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
  
  # only root can continue, because only root can read all files from your system
  allow_only_root
-@@ -30,9 +30,9 @@
+@@ -30,9 +33,9 @@
  # search for kernel
  VMLINUZ=$ROOT/boot/vmlinuz
  if [ -L "$VMLINUZ" ]; then VMLINUZ=$(readlink -f $VMLINUZ); fi
@@ -25,7 +28,25 @@ diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
  if [ "$(ls $VMLINUZ 2>>$DEBUG)" = "" ]; then echo "cannot find $VMLINUZ"; exit 1; fi
  
  header "Creating LiveCD from your Linux"
-@@ -50,7 +50,10 @@
+@@ -42,15 +45,26 @@
+ 
+ echo "copying cd-root to $CDDATA, using kernel from $VMLINUZ"
+ cp -R cd-root/boot $CDDATA
++if [ -n "$CUSTOM_CD_ROOT" ]; then
++   echo "copying custom cd-root files from $CUSTOM_CD_ROOT to $CDDATA"
++   cp -R $CUSTOM_CD_ROOT/* $CDDATA
++fi
+ for i in isolinux syslinux; do
+-   cat cd-root/boot/$i/$i.cfg | sed -r "s/LABEL linux/LABEL $LIVECDNAME/" | sed -r "s/Run linux/Run $LIVECDNAME/" > $CDDATA/boot/$i/$i.cfg
++   cat cd-root/boot/$i/$i.cfg | \
++   sed -i -r "s/LABEL linux/LABEL $LIVECDNAME/" $CDDATA/boot/$i/$i.cfg
++   sed -i -r "s/Run linux/Run $LIVECDNAME/" $CDDATA/boot/$i/$i.cfg
++   sed -i -r "s/ramdisk_size=RAM0SIZE/ramdisk_size=$RAM0SIZE/" $CDDATA/boot/$i/$i.cfg
+ done
++sed -i -r "s/RAM0SIZE/$RAM0SIZE/g" $CDDATA/boot/dos/config
+ mv $CDDATA/boot/dos/linux.bat $CDDATA/boot/dos/${LIVECDNAME:0:8}.bat
+-cat cd-root/boot/dos/readme.txt | sed -r "s/LINUX.BAT/"${LIVECDNAME:0:8}.bat"/" > $CDDATA/boot/dos/readme.txt
++sed -i -r "s/LINUX.BAT/"${LIVECDNAME:0:8}.bat"/" $CDDATA/boot/dos/readme.txt
  
  mkdir -p $CDDATA/$LIVECDNAME
  cp -R cd-root/linux/* $CDDATA/$LIVECDNAME
@@ -37,7 +58,7 @@ diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
  cp -R DOC/LICENSE $CDDATA/$LIVECDNAME
  cp $VMLINUZ $CDDATA/boot/vmlinuz
  
-@@ -82,12 +85,17 @@
+@@ -82,12 +96,17 @@
      fi
  done
  
@@ -63,27 +84,56 @@ diff -ur linux-live-6.2.4.orig/build linux-live-6.2.4/build
 +    echo "Now press Enter..."
 +    read junk
 +fi
-diff -ur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
---- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-08-19 22:27:40.960579005 +0200
+diff -Nur linux-live-6.2.4.orig/cd-root/boot/dos/config linux-live-6.2.4/cd-root/boot/dos/config
+--- linux-live-6.2.4.orig/cd-root/boot/dos/config	2007-08-08 19:32:48.000000000 +0200
++++ linux-live-6.2.4/cd-root/boot/dos/config	2008-10-22 00:00:27.000000000 +0200
+@@ -6,7 +6,7 @@
+ init=linuxrc             # start /linuxrc script from initrd.gz image
+ load_ramdisk=1           # 
+ prompt_ramdisk=0         # we do not need to be prompted
+-ramdisk_size=6666        # our initrd.gz is 6666 KB of size when unpacked
++ramdisk_size=RAM0SIZE        # our initrd.gz is RAM0SIZE KB of size when unpacked
+ 
+ vga=769                  # enable 640x480 gfx mode by default
+ 
+diff -Nur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
+--- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2007-08-08 19:32:53.000000000 +0200
++++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-10-22 00:00:27.000000000 +0200
 @@ -5,7 +5,7 @@
  LABEL linux
  MENU LABEL Run linux
  KERNEL /boot/vmlinuz
 -APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=6666 root=/dev/ram0 rw
-+APPEND initrd=/boot/initrd.gz ramdisk_size=9666 root=/dev/ram0 rw
++APPEND initrd=/boot/initrd.gz ramdisk_size=RAM0SIZE root=/dev/ram0 rw
  
  LABEL memtest86
  MENU LABEL Run Memtest utility
-diff -ur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
---- linux-live-6.2.4.orig/cd-root/linux/make_iso.sh	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-08-19 22:27:40.960579005 +0200
-@@ -12,10 +12,11 @@
+diff -Nur linux-live-6.2.4.orig/cd-root/boot/syslinux/syslinux.cfg linux-live-6.2.4/cd-root/boot/syslinux/syslinux.cfg
+--- linux-live-6.2.4.orig/cd-root/boot/syslinux/syslinux.cfg	2007-08-08 19:32:45.000000000 +0200
++++ linux-live-6.2.4/cd-root/boot/syslinux/syslinux.cfg	2008-10-22 00:00:27.000000000 +0200
+@@ -5,7 +5,7 @@
+ LABEL linux
+ MENU LABEL Run linux
+ KERNEL /boot/vmlinuz
+-APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=6666 root=/dev/ram0 rw
++APPEND vga=769 initrd=/boot/initrd.gz ramdisk_size=RAM0SIZE root=/dev/ram0 rw
+ 
+ LABEL memtest86
+ MENU LABEL Run Memtest utility
+diff -Nur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
+--- linux-live-6.2.4.orig/cd-root/linux/make_iso.sh	2008-03-13 10:36:20.000000000 +0100
++++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-10-22 00:00:27.000000000 +0200
+@@ -12,10 +12,16 @@
    exit
  fi
  
 -CDLABEL="SLAX"
-+CDLABEL="LiveCD"
++. /etc/linux-live/config || exit 1
++
++# You may override some variables by your own config
++[ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
++
++CDLABEL=${LIVECDNAME:-"LiveCD"}
  ISONAME=$(readlink -f "$1")
  
 -cd $(dirname $0)
@@ -92,21 +142,21 @@ diff -ur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-roo
  
  if [ "$ISONAME" = "" ]; then
     SUGGEST=$(readlink -f ../../$(basename $(pwd)).iso)
-@@ -26,4 +27,4 @@
+@@ -26,4 +32,4 @@
  
  mkisofs -o "$ISONAME" -v -J -R -D -A "$CDLABEL" -V "$CDLABEL" \
  -no-emul-boot -boot-info-table -boot-load-size 4 \
 --b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot ../.
 +-b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot "$DIR"
-diff -ur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
---- linux-live-6.2.4.orig/.config	2008-08-15 21:18:01.200408725 +0200
-+++ linux-live-6.2.4/.config	2008-08-19 22:27:40.960579005 +0200
+diff -Nur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
+--- linux-live-6.2.4.orig/.config	2008-03-13 10:41:55.000000000 +0100
++++ linux-live-6.2.4/.config	2008-10-22 00:00:27.000000000 +0200
 @@ -6,16 +6,12 @@
  # Live CD Name. Defaults to 'mylinux'; you should change it to your own
  # name if you wish your own branding. Eg. Slax changes it to 'slax'
  # Must not contain any spaces. You'll be asked for this during livecd creation.
 -LIVECDNAME="mylinux"
-+LIVECDNAME="pldlive"
++LIVECDNAME="PLDLive"
  
  # the size of RAMdisk (in KBytes)
  # if you change this, then you will need to change the same
@@ -135,19 +185,31 @@ diff -ur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
  
  # If the writable branch (used for changes) doesn't support symlinks or if it
  # doesn't handle chmod attributes well, overmount it using the posix overlay 
-diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
---- linux-live-6.2.4.orig/initrd/initrd_create	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/initrd_create	2008-08-19 22:28:03.111409558 +0200
-@@ -3,7 +3,7 @@
+@@ -52,7 +54,7 @@
+ USENTFS3G=yes
+ 
+ # Add locales for given language, separated by space. For supported languages
+-# see ./initrd/rootfs/usr/share/locale/locale.alias in your distribution.
++# see /usr/share/locale/locale.alias in your distribution.
+ # This is needed eg. for international NTFS-3g support. If you add more than
+ # one locale, make sure to specify which one to use, see boot parameter locale=
+ # If only one locale is specified, you don't have to specify boot parameter.
+diff -Nur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
+--- linux-live-6.2.4.orig/initrd/initrd_create	2008-01-17 16:21:20.000000000 +0100
++++ linux-live-6.2.4/initrd/initrd_create	2008-10-22 00:00:27.000000000 +0200
+@@ -3,7 +3,10 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
  
 -. ../.config || exit 1
 +. /etc/linux-live/config || exit 1
++
++# You may override some variables by your own config
++[ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
  
  if [ "$1" != "" ]; then
     LIVECDNAME="$1"
-@@ -20,6 +20,7 @@
+@@ -20,6 +23,7 @@
  # rcopy is a recursive cp, which copies also symlink's real source
  # $1 = source (may be a regular file or symlink)
  # $2 = target PARENT
@@ -155,7 +217,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  #
  rcopy()
  {
-@@ -33,7 +34,11 @@
+@@ -33,7 +37,11 @@
        cp --parent -a "$REALPATH" "$DEST"
        ln -sf "$REALPATH" "$DEST/$SOURCE"
     else
@@ -168,7 +230,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
     fi
     if [ "$?" -ne 0 ]; then
        echo ""
-@@ -51,12 +56,13 @@
+@@ -51,12 +59,13 @@
  # copy file/dir only if it exists, else skip with no error
  # $1 = source (may not exist)
  # $2 = target PARENT
@@ -183,7 +245,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
     fi
  }
  
-@@ -69,8 +75,8 @@
+@@ -69,8 +78,8 @@
  ##################################################
  # Create INITRD image now:
  
@@ -194,7 +256,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  INITRDIMG=initrd
  
  if [ ! -d $ROOT/$LMK ]; then
-@@ -78,12 +84,6 @@
+@@ -78,12 +87,6 @@
     exit 1
  fi
  
@@ -207,7 +269,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  debug "creating empty directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
  mkdir $INITRD_TREE
-@@ -150,6 +150,7 @@
+@@ -150,6 +153,7 @@
  rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
@@ -215,7 +277,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
-@@ -164,8 +165,11 @@
+@@ -164,8 +168,11 @@
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
  
  # pci modules
@@ -227,7 +289,7 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  
  # pcmcia modules
  rcopy_ex $ROOT/$LMK/kernel/drivers/pcmcia/pcmcia_core.* $INITRD_TREE 2>>$DEBUG
-@@ -190,44 +194,30 @@
+@@ -190,44 +197,30 @@
  chmod ago-x $INITRD_TREE/usr.lzm
  rm -Rf $INITRD_TREE/usr/*
  
@@ -279,9 +341,98 @@ diff -ur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/init
  
  debug "deleting directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
-diff -ur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
---- linux-live-6.2.4.orig/initrd/linuxrc	2008-08-15 21:18:01.185408216 +0200
-+++ linux-live-6.2.4/initrd/linuxrc	2008-08-19 22:27:40.963906593 +0200
+diff -Nur linux-live-6.2.4.orig/initrd/liblinuxlive linux-live-6.2.4/initrd/liblinuxlive
+--- linux-live-6.2.4.orig/initrd/liblinuxlive	2008-03-13 11:52:36.000000000 +0100
++++ linux-live-6.2.4/initrd/liblinuxlive	2008-10-22 00:00:27.000000000 +0200
+@@ -404,7 +404,7 @@
+ {
+    debug_log "create_module" "$*"
+    rm -f "$2" # overwrite, never append to existing file
+-   mksquashfs "$1" "$2" -b 256K -lzmadic 256K $3 $4 $5 $6 $7 $8 $9>/dev/null
++   mksquashfs "$1" "$2" $3 $4 $5 $6 $7 $8 $9>/dev/null
+    if [ $? -ne 0 ]; then return 1; fi
+    chmod oga-wx "$2" # remove execute attrib
+ }
+@@ -596,6 +596,13 @@
+    list_partition_devices
+ }
+ 
++# List all network drivers
++#
++list_network_drivers()
++{
++   pcidev /m net
++}
++
+ # Format mountdir for device. This function used to append _cdrom or _removable
+ # suffix to the directory name so KDE was able to assign a nice icon for evey
+ # device, but this should be done using HAL in KDE nowadays, so we do not
+@@ -732,16 +739,53 @@
+    echo /bin/mdev > /proc/sys/kernel/hotplug # use mdev as a hotplug handler
+ }
+ 
++# create modprobe.conf file $1/etc/modprobe.conf with appropriate ethX module aliases
++# $1 = root directory (union)
++#
++modprobe_update()
++{
++   i=0
++   > $1/etc/modprobe.conf
++   for drv in $(list_network_drivers); do
++      echo "alias eth$i $drv" >> $1/etc/modprobe.conf
++      i=$((i+1))
++   done
++}
++
++# list all pci devices recognized on this system
++# $1 = pcimap | usbmap
++modules_map()
++{
++   t=$1
++   d=/proc/bus/pci/devices
++   k=`uname -r`
++   while read a id b; do
++      v=0x0000${id%????}
++      d=0x0000${id#????}
++      # pci module         vendor     device     subvendor  subdevice  class      class_mask driver_data
++      # nvidia               0x000010de 0xffffffff 0xffffffff 0xffffffff 0x00030200 0xffffffff 0x0
++      echo $v $d
++   done < $d | grep -f /proc/self/fd/0 /lib/modules/$k/modules.$t | cut -d' ' -f1 | sort -u
++}
++
+ # Modprobe kernel modules needed for the LiveCD
+ #
+ modprobe_essential_modules()
+ {
+    debug_log "modprobe_essential_modules" "$*"
+ 
++   echolog "Loading PCI modules"
++   for m in $(modules_map pcimap); do
++      modprobe_module $m
++   done
+    echolog "starting loop device support"
+    modprobe_module loop
+    echolog "starting cdrom filesystem support"
+    modprobe_module isofs
++   modprobe_module ahci
++   modprobe_module sr_mod
++   modprobe_module ide-cd
++   modprobe_module cdrom
+    echolog "starting squashfs support"
+    modprobe_module squashfs
+    echolog "starting aufs support with brs=1"
+@@ -784,6 +828,8 @@
+       modprobe_module uhci-hcd
+    fi
+    modprobe_module usb-storage
++   modprobe_module usbkbd
++   modprobe_module usbhid
+ }
+ 
+ # Load drivers for PCMCIA CardBus devices
+diff -Nur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
+--- linux-live-6.2.4.orig/initrd/linuxrc	2008-03-13 10:37:28.000000000 +0100
++++ linux-live-6.2.4/initrd/linuxrc	2008-10-22 00:00:27.000000000 +0200
 @@ -250,18 +250,9 @@
  
  mount -n -o remount,ro aufs .
@@ -304,17 +455,19 @@ diff -ur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
  
  header "!!ERROR!!"
  fatal "You are not supposed to be here, something went wrong!"
-diff -ur linux-live-6.2.4.orig/install linux-live-6.2.4/install
---- linux-live-6.2.4.orig/install	2008-08-15 21:18:01.196408776 +0200
-+++ linux-live-6.2.4/install	2008-08-19 22:27:40.963906593 +0200
-@@ -15,18 +15,7 @@
+diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
+--- linux-live-6.2.4.orig/install	2007-05-14 18:50:44.000000000 +0200
++++ linux-live-6.2.4/install	2008-10-22 00:00:27.000000000 +0200
+@@ -15,18 +15,10 @@
  if [ "$N" = "build" ]; then
     N=install
  else
 -   . ./.config || exit 1
+-   if [ "$1" ]; then ROOT="$1"; fi
+-fi
 +   . /etc/linux-live/config || exit 1
-    if [ "$1" ]; then ROOT="$1"; fi
- fi
++# You may override some variables by your own config
++   [ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
  
 -if [ "$N" != "uninstall" ]; then
 -   mkdir -p $ROOT/usr/bin
@@ -324,12 +477,13 @@ diff -ur linux-live-6.2.4.orig/install linux-live-6.2.4/install
 -else
 -   ls -1 ./tools | egrep -v "^lib" | while read FILE; do rm -v $ROOT/usr/bin/$FILE; done
 -   ls -1 ./tools | egrep "^lib" | while read FILE; do rm -v $ROOT/usr/lib/$FILE; done
--fi
--
++   if [ "$1" ]; then ROOT="$1"; fi
+ fi
+ 
 -echo "Linux Live scripts were $N""ed successfuly in $1/"
-diff -ur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
---- linux-live-6.2.4.orig/tools/liblinuxlive	2008-08-15 21:18:01.184408508 +0200
-+++ linux-live-6.2.4/tools/liblinuxlive	2008-08-19 22:27:53.744753181 +0200
+diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
+--- linux-live-6.2.4.orig/tools/liblinuxlive	2008-03-13 11:52:36.000000000 +0100
++++ linux-live-6.2.4/tools/liblinuxlive	2008-10-22 00:00:27.000000000 +0200
 @@ -404,7 +404,7 @@
  {
     debug_log "create_module" "$*"
