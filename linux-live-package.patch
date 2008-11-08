@@ -493,3 +493,21 @@ diff -Nur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  
  # pci modules
  rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
+diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
+--- linux-live-6.2.4.orig/tools/liblinuxlive	2008-11-08 09:24:23.000000000 +0100
++++ linux-live-6.2.4/tools/liblinuxlive	2008-11-08 15:42:06.000000000 +0100
+@@ -854,9 +854,11 @@
+ rmmod_unused_modules()
+ {
+    debug_log "rmmod_unused_modules" "$*"
+-   rmmod usb-storage uhci-hcd ohci-hcd ehci-hcd 2>/dev/null
+-   rmmod yenta_socket rsrc_nonstatic pcmcia pcmcia_core 2>/dev/null
+-   rmmod $(cat /proc/modules | cut -d " " -f 1) 2>/dev/null
++# Do not force removing modules, or invent some way of finding real unused modules
++# Such way breaks booting from USB CD
++#   rmmod usb-storage uhci-hcd ohci-hcd ehci-hcd 2>/dev/null
++#   rmmod yenta_socket rsrc_nonstatic pcmcia pcmcia_core 2>/dev/null
++#   rmmod $(cat /proc/modules | cut -d " " -f 1) 2>/dev/null
+ }
+ 
+ # kill all unneeded processes, which have bigger PID then the PID of
