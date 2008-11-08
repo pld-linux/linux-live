@@ -481,3 +481,15 @@ diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
  }
  
  # Load drivers for PCMCIA CardBus devices
+diff -Nur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
+--- linux-live-6.2.4.orig/initrd/initrd_create	2008-11-08 09:24:23.000000000 +0100
++++ linux-live-6.2.4/initrd/initrd_create	2008-11-08 14:21:34.000000000 +0100
+@@ -166,6 +166,8 @@
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/usb/core $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/hid $INITRD_TREE 2>>$DEBUG
+ 
+ # pci modules
+ rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
