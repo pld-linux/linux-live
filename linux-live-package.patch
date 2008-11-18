@@ -277,12 +277,13 @@ diff -Nur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/ini
  rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
-@@ -162,10 +166,15 @@
+@@ -162,10 +166,16 @@
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.* $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.* $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
 +rcopy_ex $ROOT/$LMK/kernel/drivers/usb/core $INITRD_TREE 2>>$DEBUG
 +rcopy_ex $ROOT/$LMK/kernel/drivers/hid $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/input/ff-memless.* $INITRD_TREE 2>>$DEBUG
  
  # pci modules
 +rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
