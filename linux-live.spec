@@ -4,7 +4,7 @@ Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
 Version:	6.2.4
-Release:	6
+Release:	7
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
@@ -12,7 +12,17 @@ Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
+Requires:	busybox
+Requires:	coreutils
+Requires:	e2fsprogs
+Requires:	eject
+Requires:	grep
+Requires:	mawk
+Requires:	mkisofs
+Requires:	pci-database
+Requires:	sed
 Requires:	squashfs
+Obsoletes:	linux-live-build < 6.2.4-7
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -39,27 +49,6 @@ LiveCD z każdej dystrybucji Linuksa. Wystarczy zainstalować ulubioną
 dystrybucję, usunąć wszystkie niepotrzebne pliki (na przykład strony
 manuala i wszystkie inne nieistotne dla nas pliki), a następnie
 ściągnąć i uruchomić te skrypty, aby stworzyć własnego Live Linuksa.
-
-%package build
-Summary:	Linux Live build scripts
-Summary(pl.UTF-8):	Skrypty do tworzenia Linux Live
-Group:		Applications/System
-Requires:	%{name} = %{version}-%{release}
-Requires:	busybox
-Requires:	coreutils
-Requires:	e2fsprogs
-Requires:	eject
-Requires:	grep
-Requires:	mawk
-Requires:	mkisofs
-Requires:	pci-database
-Requires:	sed
-
-%description build
-Scripts to build your livecd with Linux Live scripts.
-
-%description build -l pl.UTF-8
-Skrypty do tworzenia własnego livecd przy użyciu skryptów Linux Live.
 
 %prep
 %setup -q
@@ -92,21 +81,20 @@ install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc,upd-rootfs
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
 
+rm -rf $RPM_BUILD_ROOT%{_libexecdir}/initrd/posixovl/usr/src
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%doc DOC/changelog.txt DOC/requirements.txt
+%attr(755,root,root) %{_sbindir}/linux-live-build
 %attr(755,root,root) %{_bindir}/deb2lzm
 %attr(755,root,root) %{_bindir}/dir2lzm
 %attr(755,root,root) %{_bindir}/lzm2dir
 %attr(755,root,root) %{_bindir}/tgz2lzm
 %{_libdir}/liblinuxlive
-
-%files build
-%defattr(644,root,root,755)
-%doc DOC/changelog.txt DOC/requirements.txt
-%attr(755,root,root) %{_sbindir}/linux-live-build
 %dir %{_sysconfdir}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
