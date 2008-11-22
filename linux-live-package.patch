@@ -484,12 +484,13 @@ diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
     echolog "starting squashfs support"
     modprobe_module squashfs
     echolog "starting aufs support with brs=1"
-@@ -784,6 +828,8 @@
+@@ -784,6 +828,9 @@
        modprobe_module uhci-hcd
     fi
     modprobe_module usb-storage
 +   modprobe_module usbkbd
 +   modprobe_module usbhid
++   modprobe_module sd-mod
  }
  
  # Load drivers for PCMCIA CardBus devices
