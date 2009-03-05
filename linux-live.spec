@@ -119,6 +119,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}/initrd/ntfs-3g
 %dir %{_libexecdir}/initrd/ntfs-3g/usr
 %dir %{_libexecdir}/initrd/ntfs-3g/usr/bin
+%dir %{_libexecdir}/initrd/ntfs-3g/bin
 %attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/bin/*
 %attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/bin/*
 %dir %{_libexecdir}/initrd/ntfs-3g/usr/lib
