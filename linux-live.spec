@@ -3,12 +3,12 @@
 Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
-Version:	6.2.4
-Release:	7
+Version:	6.2.9
+Release:	1
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
-# Source0-md5:	1d14e9323bb98ef5621e0c7f7755cbd0
+# Source0-md5:	ef9c237a23f5a310ba4bbb61e80ccf87
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
@@ -76,7 +76,7 @@ install -d $RPM_BUILD_ROOT%{_libexecdir}
 
 # initrd
 install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc,upd-rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
+install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 %{__cp} -a initrd/{fuse,ntfs-3g,posixovl,rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
@@ -110,7 +110,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libexecdir}/initrd/addlocaleslib
 %attr(755,root,root) %{_libexecdir}/initrd/cleanup
 %attr(755,root,root) %{_libexecdir}/initrd/initrd_create
-%attr(755,root,root) %{_libexecdir}/initrd/upd-rootfs
 %dir %{_libexecdir}/initrd/fuse
 %dir %{_libexecdir}/initrd/fuse/usr
 %dir %{_libexecdir}/initrd/fuse/usr/bin
@@ -121,6 +120,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libexecdir}/initrd/ntfs-3g/usr
 %dir %{_libexecdir}/initrd/ntfs-3g/usr/bin
 %attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/bin/*
+%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/bin/*
 %dir %{_libexecdir}/initrd/ntfs-3g/usr/lib
 %attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/lib/*.so*
 %dir %{_libexecdir}/initrd/posixovl
