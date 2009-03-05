@@ -84,18 +84,6 @@ diff -Nur linux-live-6.2.4.orig/build linux-live-6.2.4/build
 +    echo "Now press Enter..."
 +    read junk
 +fi
-diff -Nur linux-live-6.2.4.orig/cd-root/boot/dos/config linux-live-6.2.4/cd-root/boot/dos/config
---- linux-live-6.2.4.orig/cd-root/boot/dos/config	2007-08-08 19:32:48.000000000 +0200
-+++ linux-live-6.2.4/cd-root/boot/dos/config	2008-11-08 15:45:52.000000000 +0100
-@@ -6,7 +6,7 @@
- init=linuxrc             # start /linuxrc script from initrd.gz image
- load_ramdisk=1           # 
- prompt_ramdisk=0         # we do not need to be prompted
--ramdisk_size=6666        # our initrd.gz is 6666 KB of size when unpacked
-+ramdisk_size=RAM0SIZE        # our initrd.gz is RAM0SIZE KB of size when unpacked
- 
- vga=769                  # enable 640x480 gfx mode by default
- 
 diff -Nur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
 --- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2007-08-08 19:32:53.000000000 +0200
 +++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-11-08 15:45:52.000000000 +0100
@@ -194,165 +182,6 @@ diff -Nur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
  # This is needed eg. for international NTFS-3g support. If you add more than
  # one locale, make sure to specify which one to use, see boot parameter locale=
  # If only one locale is specified, you don't have to specify boot parameter.
-diff -Nur linux-live-6.2.4.orig/initrd/initrd_create linux-live-6.2.4/initrd/initrd_create
---- linux-live-6.2.4.orig/initrd/initrd_create	2008-01-17 16:21:20.000000000 +0100
-+++ linux-live-6.2.4/initrd/initrd_create	2008-11-08 15:45:52.000000000 +0100
-@@ -3,7 +3,10 @@
- #
- # Author:	  Tomas M. <http://www.linux-live.org>
- 
--. ../.config || exit 1
-+. /etc/linux-live/config || exit 1
-+
-+# You may override some variables by your own config
-+[ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
- 
- if [ "$1" != "" ]; then
-    LIVECDNAME="$1"
-@@ -20,6 +23,7 @@
- # rcopy is a recursive cp, which copies also symlink's real source
- # $1 = source (may be a regular file or symlink)
- # $2 = target PARENT
-+# $3 = optional PREFIX to strip from $1
- #
- rcopy()
- {
-@@ -33,7 +37,11 @@
-       cp --parent -a "$REALPATH" "$DEST"
-       ln -sf "$REALPATH" "$DEST/$SOURCE"
-    else
--      cp --parent -a "$SOURCE" "$DEST"
-+      if [ "$3" ]; then
-+          tar ${3:+-C "$3"} -cf - "${1#$3/}" | tar -C "$DEST" -xf -
-+      else
-+          cp --parent -a "$SOURCE" "$DEST"
-+      fi
-    fi
-    if [ "$?" -ne 0 ]; then
-       echo ""
-@@ -51,12 +59,13 @@
- # copy file/dir only if it exists, else skip with no error
- # $1 = source (may not exist)
- # $2 = target PARENT
-+# $3 = optional PREFIX to strip from $1
- #
- rcopy_ex()
- {
-    debug "rcopy_ex $1 $2"
-    if [ -a "$1" ]; then
--      rcopy "$1" "$2"
-+      rcopy "$1" "$2" "$3"
-    fi
- }
- 
-@@ -69,8 +78,8 @@
- ##################################################
- # Create INITRD image now:
- 
--MOUNTDIR=/tmp/initrd_mountdir_$$
--INITRD_TREE=/tmp/initrd_tree_$$
-+MOUNTDIR=$(mktemp -d || echo /tmp/initrd_mountdir_$$)
-+INITRD_TREE=$(mktemp -d || echo /tmp/initrd_tree_$$)
- INITRDIMG=initrd
- 
- if [ ! -d $ROOT/$LMK ]; then
-@@ -78,12 +87,6 @@
-    exit 1
- fi
- 
--if [ "$(ls -1 rootfs/lib)" = "" ]; then
--   echo "cannot find essential libc libraries."
--   echo "please add ld-linux and libc.so to $(pwd)./rootfs/lib"
--   exit 1
--fi
--
- debug "creating empty directory $INITRD_TREE"
- rm -Rf $INITRD_TREE
- mkdir $INITRD_TREE
-@@ -150,6 +153,8 @@
- rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/fs/jbd $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/fs/mbcache.* $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
-@@ -162,10 +166,22 @@
- rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.* $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.* $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/drivers/usb/core $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/drivers/hid $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/drivers/input/ff-memless.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/crc16.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/crc7.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/crc-ccit.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/crc-itu-t.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/crc-t10dif.* $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/lib/libcrc32c.* $INITRD_TREE 2>>$DEBUG
- 
- # pci modules
-+rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/drivers/acpi $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/drivers/cdrom $INITRD_TREE 2>>$DEBUG
- rcopy_ex $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE 2>>$DEBUG
-+rcopy_ex $ROOT/$LMK/kernel/drivers/ata $INITRD_TREE 2>>$DEBUG
- 
- # pcmcia modules
- rcopy_ex $ROOT/$LMK/kernel/drivers/pcmcia/pcmcia_core.* $INITRD_TREE 2>>$DEBUG
-@@ -190,44 +199,30 @@
- chmod ago-x $INITRD_TREE/usr.lzm
- rm -Rf $INITRD_TREE/usr/*
- 
--debug "creating empty image file for initrd"
--dd if=/dev/zero of=$INITRDIMG bs=1024 count=$RAM0SIZE >>$DEBUG 2>&1
--
--debug "making filesystem"
--mkfs -t ext2 -F -m 0 -b 1024 -i 1024 $INITRDIMG >>$DEBUG 2>&1
--tune2fs -i 120m $INITRDIMG >>$DEBUG 2>&1
--
- debug "creating empty directory $MOUNTDIR"
- rm -Rf $MOUNTDIR
- mkdir $MOUNTDIR
- 
--debug "mounting $INITRDIMG to it"
--modprobe loop 2>>$DEBUG
--mount -o loop -t ext2 $INITRDIMG $MOUNTDIR
--if [ "$?" -ne 0 ]; then
--   echo "Error mounting initrd! Not enough free loop devices?"
--   exit 1
--fi
--
- debug "copying content of $INITRD_TREE to $MOUNTDIR"
--rmdir $MOUNTDIR/lost+found
- cp -R --preserve $INITRD_TREE/* $MOUNTDIR 2>/dev/null
- if [ $? -ne 0 ]; then
-    debug "error copying data to mounted initrd. Increase RAM0SIZE"
-    echo "Not enough free space in initrd. Edit .config and increase RAM0SIZE !"
--   umount $MOUNTDIR
--   rm $INITRDIMG
-    exit 1
- fi
- 
--debug "unmounting $MOUNTDIR"
--umount $MOUNTDIR
-+debug "building $MOUNTDIR"
-+CUR=$(pwd)
-+cd $MOUNTDIR
-+cp linuxrc init
-+find . | cpio -H newc -o > "$CUR/$INITRDIMG"
-+cd $CUR
- 
- debug "gzipping $INITRDIMG"
- gzip --best $INITRDIMG
- 
- debug "deleting directory $MOUNTDIR"
--rmdir $MOUNTDIR
-+rm -rf $MOUNTDIR
- 
- debug "deleting directory $INITRD_TREE"
- rm -Rf $INITRD_TREE
 diff -Nur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
 --- linux-live-6.2.4.orig/initrd/linuxrc	2008-03-13 10:37:28.000000000 +0100
 +++ linux-live-6.2.4/initrd/linuxrc	2008-11-08 15:45:52.000000000 +0100
@@ -404,19 +233,186 @@ diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
  fi
  
 -echo "Linux Live scripts were $N""ed successfuly in $1/"
-diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblinuxlive
---- linux-live-6.2.4.orig/tools/liblinuxlive	2008-03-13 11:52:36.000000000 +0100
-+++ linux-live-6.2.4/tools/liblinuxlive	2008-11-08 15:45:52.000000000 +0100
-@@ -404,7 +404,7 @@
+--- linux-live-6.2.9/cd-root/boot/dos/config.orig	2008-08-21 16:19:55.000000000 +0200
++++ linux-live-6.2.9/cd-root/boot/dos/config	2009-03-05 19:18:40.000000000 +0100
+@@ -2,5 +2,5 @@
+ init=linuxrc
+ load_ramdisk=1
+ prompt_ramdisk=0
+-ramdisk_size=6666
++ramdisk_size=RAM0SIZE
+ rw
+--- linux-live-6.2.9/initrd/initrd_create.orig	2008-08-21 16:59:53.000000000 +0200
++++ linux-live-6.2.9/initrd/initrd_create	2009-03-05 19:20:13.000000000 +0100
+@@ -3,8 +3,10 @@
+ #
+ # Author:	  Tomas M. <http://www.linux-live.org>
+ 
+-. ../.config || exit 1
+-. ./liblinuxlive || exit 1
++. /etc/linux-live/config || exit 1
++
++# You may override some variables by your own config
++[ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
+ 
+ if [ "$1" != "" ]; then
+    LIVECDNAME="$1"
+@@ -21,6 +23,7 @@
+ # rcopy is a recursive cp, which copies also symlink's real source
+ # $1 = source (may be a regular file or symlink)
+ # $2 = target PARENT
++# $3 = optional PREFIX to strip from $1
+ #
+ rcopy()
+ {
+@@ -34,7 +37,11 @@
+       cp --parent -a "$REALPATH" "$DEST"
+       ln -sf "$REALPATH" "$DEST/$SOURCE"
+    else
+-      cp --parent -a "$SOURCE" "$DEST"
++      if [ "$3" ]; then
++          tar ${3:+-C "$3"} -cf - "${1#$3/}" | tar -C "$DEST" -xf -
++      else
++          cp --parent -a "$SOURCE" "$DEST"
++      fi
+    fi
+    if [ "$?" -ne 0 ]; then
+       echo ""
+@@ -52,12 +59,13 @@
+ # copy file/dir only if it exists, else skip with no error
+ # $1 = source (may not exist)
+ # $2 = target PARENT
++# $3 = optional PREFIX to strip from $1
+ #
+ rcopy_ex()
+ {
+    debug "rcopy_ex $1 $2"
+    if [ -a "$1" ]; then
+-      rcopy "$1" "$2"
++      rcopy "$1" "$2" "$3"
+    fi
+ }
+ 
+@@ -70,8 +78,8 @@
+ ##################################################
+ # Create INITRD image now:
+ 
+-MOUNTDIR=/tmp/initrd_mountdir_$$
+-INITRD_TREE=/tmp/initrd_tree_$$
++MOUNTDIR=$(mktemp -d || echo /tmp/initrd_mountdir_$$)
++INITRD_TREE=$(mktemp -d || echo /tmp/initrd_tree_$$)
+ INITRDIMG=initrd
+ 
+ if [ ! -d $ROOT/$LMK ]; then
+@@ -79,12 +87,6 @@
+    exit 1
+ fi
+ 
+-if [ "$(ls -1 rootfs/lib)" = "" ]; then
+-   echo "cannot find essential libc libraries."
+-   echo "please add ld-linux and libc.so to $(pwd)./rootfs/lib"
+-   exit 1
+-fi
+-
+ debug "creating empty directory $INITRD_TREE"
+ rm -Rf $INITRD_TREE
+ mkdir $INITRD_TREE
+@@ -150,6 +152,8 @@
+ rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/fs/jbd $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/fs/mbcache.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
+@@ -162,10 +166,22 @@
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.* $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/usb/core $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/hid $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/input/ff-memless.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/crc16.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/crc7.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/crc-ccit.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/crc-itu-t.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/crc-t10dif.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/lib/libcrc32c.* $INITRD_TREE 2>>$DEBUG
+ 
+ # pci modules
++rcopy_ex $ROOT/$LMK/kernel/drivers/scsi $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/acpi $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/cdrom $INITRD_TREE 2>>$DEBUG
+ rcopy_ex $ROOT/$LMK/kernel/drivers/ide $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/drivers/ata $INITRD_TREE 2>>$DEBUG
+ 
+ # pcmcia modules
+ rcopy_ex $ROOT/$LMK/kernel/drivers/pcmcia/pcmcia_core.* $INITRD_TREE 2>>$DEBUG
+@@ -204,44 +220,30 @@
+ chmod ago-x $INITRD_TREE/drivers.lzm
+ rm -Rf $INITRD_TREE/$LMK/kernel/drivers/*
+ 
+-debug "creating empty image file for initrd"
+-dd if=/dev/zero of=$INITRDIMG bs=1024 count=$RAM0SIZE >>$DEBUG 2>&1
+-
+-debug "making filesystem"
+-mkfs -t ext2 -F -m 0 -b 1024 -i 1024 $INITRDIMG >>$DEBUG 2>&1
+-tune2fs -i 120m $INITRDIMG >>$DEBUG 2>&1
+-
+ debug "creating empty directory $MOUNTDIR"
+ rm -Rf $MOUNTDIR
+ mkdir $MOUNTDIR
+ 
+-debug "mounting $INITRDIMG to it"
+-modprobe loop 2>>$DEBUG
+-mount -o loop -t ext2 $INITRDIMG $MOUNTDIR
+-if [ "$?" -ne 0 ]; then
+-   echo "Error mounting initrd! Not enough free loop devices?"
+-   exit 1
+-fi
+-
+ debug "copying content of $INITRD_TREE to $MOUNTDIR"
+-rmdir $MOUNTDIR/lost+found
+ cp -R --preserve $INITRD_TREE/* $MOUNTDIR 2>/dev/null
+ if [ $? -ne 0 ]; then
+    debug "error copying data to mounted initrd. Increase RAM0SIZE"
+    echo "Not enough free space in initrd. Edit .config and increase RAM0SIZE !"
+-   umount $MOUNTDIR
+-   rm $INITRDIMG
+    exit 1
+ fi
+ 
+-debug "unmounting $MOUNTDIR"
+-umount $MOUNTDIR
++debug "building $MOUNTDIR"
++CUR=$(pwd)
++cd $MOUNTDIR
++cp linuxrc init
++find . | cpio -H newc -o > "$CUR/$INITRDIMG"
++cd $CUR
+ 
+ debug "gzipping $INITRDIMG"
+ gzip --best $INITRDIMG
+ 
+ debug "deleting directory $MOUNTDIR"
+-rmdir $MOUNTDIR
++rm -rf $MOUNTDIR
+ 
+ debug "deleting directory $INITRD_TREE"
+ rm -Rf $INITRD_TREE
+--- linux-live-6.2.9/tools/liblinuxlive.orig	2008-10-28 16:34:59.000000000 +0100
++++ linux-live-6.2.9/tools/liblinuxlive	2009-03-05 19:25:56.000000000 +0100
+@@ -462,7 +462,7 @@
  {
     debug_log "create_module" "$*"
     rm -f "$2" # overwrite, never append to existing file
 -   mksquashfs "$1" "$2" -b 256K -lzmadic 256K $3 $4 $5 $6 $7 $8 $9>/dev/null
 +   mksquashfs "$1" "$2" $3 $4 $5 $6 $7 $8 $9>/dev/null
     if [ $? -ne 0 ]; then return 1; fi
-    chmod oga-wx "$2" # remove execute attrib
- }
-@@ -596,6 +596,13 @@
+    chmod a-wx "$2" # remove execute and write attrib
+    chmod a+r "$2" # add read for everyone
+@@ -680,6 +680,13 @@
     list_partition_devices
  }
  
@@ -430,7 +426,7 @@ diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
  # Format mountdir for device. This function used to append _cdrom or _removable
  # suffix to the directory name so KDE was able to assign a nice icon for evey
  # device, but this should be done using HAL in KDE nowadays, so we do not
-@@ -732,16 +739,53 @@
+@@ -844,16 +851,53 @@
     echo /bin/mdev > /proc/sys/kernel/hotplug # use mdev as a hotplug handler
  }
  
@@ -484,7 +480,7 @@ diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
     echolog "starting squashfs support"
     modprobe_module squashfs
     echolog "starting aufs support with brs=1"
-@@ -784,6 +828,9 @@
+@@ -896,6 +940,9 @@
        modprobe_module uhci-hcd
     fi
     modprobe_module usb-storage
@@ -494,18 +490,16 @@ diff -Nur linux-live-6.2.4.orig/tools/liblinuxlive linux-live-6.2.4/tools/liblin
  }
  
  # Load drivers for PCMCIA CardBus devices
-@@ -808,9 +854,11 @@
+@@ -973,8 +1020,10 @@
  rmmod_unused_modules()
  {
     debug_log "rmmod_unused_modules" "$*"
 -   rmmod usb-storage uhci-hcd ohci-hcd ehci-hcd 2>/dev/null
 -   rmmod yenta_socket rsrc_nonstatic pcmcia pcmcia_core 2>/dev/null
--   rmmod $(cat /proc/modules | cut -d " " -f 1) 2>/dev/null
-+# Do not force removing modules, or invent some way of finding real unused modules
-+# Such way breaks booting from USB CD
-+#   rmmod usb-storage uhci-hcd ohci-hcd ehci-hcd 2>/dev/null
-+#   rmmod yenta_socket rsrc_nonstatic pcmcia pcmcia_core 2>/dev/null
-+#   rmmod $(cat /proc/modules | cut -d " " -f 1) 2>/dev/null
++   # Do not force removing modules, or invent some way of finding real unused modules
++   # Such way breaks booting from USB CD
++   #rmmod usb-storage uhci-hcd ohci-hcd ehci-hcd 2>/dev/null
++   #rmmod yenta_socket rsrc_nonstatic pcmcia pcmcia_core 2>/dev/null
  }
  
  # kill all unneeded processes, which have bigger PID then the PID of
