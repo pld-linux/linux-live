@@ -1,6 +1,6 @@
-diff -Nur linux-live-6.2.4.orig/build linux-live-6.2.4/build
---- linux-live-6.2.4.orig/build	2008-02-14 11:52:22.000000000 +0100
-+++ linux-live-6.2.4/build	2008-11-08 15:45:52.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/build linux-live-6.2.9/build
+--- linux-live-6.2.9-orig/build	2008-02-14 11:52:22.000000000 +0100
++++ linux-live-6.2.9/build	2009-03-16 03:41:31.000000000 +0100
 @@ -10,8 +10,11 @@
  echo "Changing current directory to $CHANGEDIR"
  cd $CHANGEDIR
@@ -84,9 +84,19 @@ diff -Nur linux-live-6.2.4.orig/build linux-live-6.2.4/build
 +    echo "Now press Enter..."
 +    read junk
 +fi
-diff -Nur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg
---- linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg	2007-08-08 19:32:53.000000000 +0200
-+++ linux-live-6.2.4/cd-root/boot/isolinux/isolinux.cfg	2008-11-08 15:45:52.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/cd-root/boot/dos/config linux-live-6.2.9/cd-root/boot/dos/config
+--- linux-live-6.2.9-orig/cd-root/boot/dos/config	2008-08-21 16:19:55.000000000 +0200
++++ linux-live-6.2.9/cd-root/boot/dos/config	2009-03-16 03:41:31.000000000 +0100
+@@ -2,5 +2,5 @@
+ init=linuxrc
+ load_ramdisk=1
+ prompt_ramdisk=0
+-ramdisk_size=6666
++ramdisk_size=RAM0SIZE
+ rw
+diff -Nur linux-live-6.2.9-orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.2.9/cd-root/boot/isolinux/isolinux.cfg
+--- linux-live-6.2.9-orig/cd-root/boot/isolinux/isolinux.cfg	2007-08-08 19:32:53.000000000 +0200
++++ linux-live-6.2.9/cd-root/boot/isolinux/isolinux.cfg	2009-03-16 03:41:31.000000000 +0100
 @@ -5,7 +5,7 @@
  LABEL linux
  MENU LABEL Run linux
@@ -96,9 +106,9 @@ diff -Nur linux-live-6.2.4.orig/cd-root/boot/isolinux/isolinux.cfg linux-live-6.
  
  LABEL memtest86
  MENU LABEL Run Memtest utility
-diff -Nur linux-live-6.2.4.orig/cd-root/boot/syslinux/syslinux.cfg linux-live-6.2.4/cd-root/boot/syslinux/syslinux.cfg
---- linux-live-6.2.4.orig/cd-root/boot/syslinux/syslinux.cfg	2007-08-08 19:32:45.000000000 +0200
-+++ linux-live-6.2.4/cd-root/boot/syslinux/syslinux.cfg	2008-11-08 15:45:52.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/cd-root/boot/syslinux/syslinux.cfg linux-live-6.2.9/cd-root/boot/syslinux/syslinux.cfg
+--- linux-live-6.2.9-orig/cd-root/boot/syslinux/syslinux.cfg	2007-08-08 19:32:45.000000000 +0200
++++ linux-live-6.2.9/cd-root/boot/syslinux/syslinux.cfg	2009-03-16 03:41:31.000000000 +0100
 @@ -5,7 +5,7 @@
  LABEL linux
  MENU LABEL Run linux
@@ -108,9 +118,9 @@ diff -Nur linux-live-6.2.4.orig/cd-root/boot/syslinux/syslinux.cfg linux-live-6.
  
  LABEL memtest86
  MENU LABEL Run Memtest utility
-diff -Nur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-root/linux/make_iso.sh
---- linux-live-6.2.4.orig/cd-root/linux/make_iso.sh	2008-03-13 10:36:20.000000000 +0100
-+++ linux-live-6.2.4/cd-root/linux/make_iso.sh	2008-11-08 15:45:52.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/cd-root/linux/make_iso.sh linux-live-6.2.9/cd-root/linux/make_iso.sh
+--- linux-live-6.2.9-orig/cd-root/linux/make_iso.sh	2008-03-13 10:36:20.000000000 +0100
++++ linux-live-6.2.9/cd-root/linux/make_iso.sh	2009-03-16 03:41:31.000000000 +0100
 @@ -12,10 +12,16 @@
    exit
  fi
@@ -136,9 +146,9 @@ diff -Nur linux-live-6.2.4.orig/cd-root/linux/make_iso.sh linux-live-6.2.4/cd-ro
  -no-emul-boot -boot-info-table -boot-load-size 4 \
 --b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot ../.
 +-b boot/isolinux/isolinux.bin -c boot/isolinux/isolinux.boot "$DIR"
-diff -Nur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
---- linux-live-6.2.4.orig/.config	2008-03-13 10:41:55.000000000 +0100
-+++ linux-live-6.2.4/.config	2008-11-08 15:45:52.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/.config linux-live-6.2.9/.config
+--- linux-live-6.2.9-orig/.config	2008-08-21 17:00:59.000000000 +0200
++++ linux-live-6.2.9/.config	2009-03-16 03:41:31.000000000 +0100
 @@ -6,16 +6,12 @@
  # Live CD Name. Defaults to 'mylinux'; you should change it to your own
  # name if you wish your own branding. Eg. Slax changes it to 'slax'
@@ -182,68 +192,9 @@ diff -Nur linux-live-6.2.4.orig/.config linux-live-6.2.4/.config
  # This is needed eg. for international NTFS-3g support. If you add more than
  # one locale, make sure to specify which one to use, see boot parameter locale=
  # If only one locale is specified, you don't have to specify boot parameter.
-diff -Nur linux-live-6.2.4.orig/initrd/linuxrc linux-live-6.2.4/initrd/linuxrc
---- linux-live-6.2.4.orig/initrd/linuxrc	2008-03-13 10:37:28.000000000 +0100
-+++ linux-live-6.2.4/initrd/linuxrc	2008-11-08 15:45:52.000000000 +0100
-@@ -250,18 +250,9 @@
- 
- mount -n -o remount,ro aufs .
- 
--# We will copy init from the distro to initrd (there should be 2MB free)
--# This allows us to use the cleanup script during reboot, as init will be
--# started from memory and not from the union and /union will not be busy.
--
--cp -af $INIT /bin
--if [ $? -eq 0 ]; then
--   pivot_root . $INITRAMDISK
--   exec $CHROOT . $INITRAMDISK/bin/init <dev/console >dev/console 2>&1
--else # If copying fails, start init directly.
--   pivot_root . $INITRAMDISK
--   exec $CHROOT . $INIT <dev/console >dev/console 2>&1
--fi
-+# Should do switch_root but not supported by this busybox
-+pivot_root . $INITRAMDISK
-+exec $CHROOT . $INIT <dev/console >dev/console 2>&1
- 
- header "!!ERROR!!"
- fatal "You are not supposed to be here, something went wrong!"
-diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
---- linux-live-6.2.4.orig/install	2007-05-14 18:50:44.000000000 +0200
-+++ linux-live-6.2.4/install	2008-11-08 15:45:52.000000000 +0100
-@@ -15,18 +15,10 @@
- if [ "$N" = "build" ]; then
-    N=install
- else
--   . ./.config || exit 1
--   if [ "$1" ]; then ROOT="$1"; fi
--fi
-+   . /etc/linux-live/config || exit 1
-+# You may override some variables by your own config
-+   [ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
- 
--if [ "$N" != "uninstall" ]; then
--   mkdir -p $ROOT/usr/bin
--   mkdir -p $ROOT/usr/lib
--   ls -1 ./tools | egrep -v "^lib" | while read FILE; do cp ./tools/$FILE $ROOT/usr/bin; done
--   cat ./tools/liblinuxlive | sed -r 's/^LIVECDNAME=.*/LIVECDNAME="'$LIVECDNAME'"/' > $ROOT/usr/lib/liblinuxlive
--else
--   ls -1 ./tools | egrep -v "^lib" | while read FILE; do rm -v $ROOT/usr/bin/$FILE; done
--   ls -1 ./tools | egrep "^lib" | while read FILE; do rm -v $ROOT/usr/lib/$FILE; done
-+   if [ "$1" ]; then ROOT="$1"; fi
- fi
- 
--echo "Linux Live scripts were $N""ed successfuly in $1/"
---- linux-live-6.2.9/cd-root/boot/dos/config.orig	2008-08-21 16:19:55.000000000 +0200
-+++ linux-live-6.2.9/cd-root/boot/dos/config	2009-03-05 19:18:40.000000000 +0100
-@@ -2,5 +2,5 @@
- init=linuxrc
- load_ramdisk=1
- prompt_ramdisk=0
--ramdisk_size=6666
-+ramdisk_size=RAM0SIZE
- rw
---- linux-live-6.2.9/initrd/initrd_create.orig	2008-08-21 16:59:53.000000000 +0200
-+++ linux-live-6.2.9/initrd/initrd_create	2009-03-05 19:20:13.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/initrd/initrd_create linux-live-6.2.9/initrd/initrd_create
+--- linux-live-6.2.9-orig/initrd/initrd_create	2008-08-21 16:59:53.000000000 +0200
++++ linux-live-6.2.9/initrd/initrd_create	2009-03-16 03:41:31.000000000 +0100
 @@ -3,8 +3,10 @@
  #
  # Author:	  Tomas M. <http://www.linux-live.org>
@@ -317,16 +268,17 @@ diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
  debug "creating empty directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
  mkdir $INITRD_TREE
-@@ -150,6 +152,8 @@
+@@ -150,6 +152,9 @@
  rcopy_ex $ROOT/$LMK/kernel/fs/fat $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/vfat $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/ntfs $INITRD_TREE 2>>$DEBUG
 +rcopy_ex $ROOT/$LMK/kernel/fs/jbd $INITRD_TREE 2>>$DEBUG
 +rcopy_ex $ROOT/$LMK/kernel/fs/mbcache.* $INITRD_TREE 2>>$DEBUG
++rcopy_ex $ROOT/$LMK/kernel/fs/exportfs $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/ext3 $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/reiserfs $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/fs/xfs $INITRD_TREE 2>>$DEBUG
-@@ -162,10 +166,22 @@
+@@ -162,10 +167,22 @@
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ehci-hcd.* $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/ohci-hcd.* $INITRD_TREE 2>>$DEBUG
  rcopy_ex $ROOT/$LMK/kernel/drivers/usb/host/uhci-hcd.* $INITRD_TREE 2>>$DEBUG
@@ -349,17 +301,22 @@ diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
  
  # pcmcia modules
  rcopy_ex $ROOT/$LMK/kernel/drivers/pcmcia/pcmcia_core.* $INITRD_TREE 2>>$DEBUG
-@@ -204,44 +220,30 @@
+@@ -202,46 +219,35 @@
+ debug "compressing net in initrd"
+ mksquashfs $INITRD_TREE/$LMK/kernel/drivers $INITRD_TREE/drivers.lzm >/dev/null 2>&1
  chmod ago-x $INITRD_TREE/drivers.lzm
++#preserve loop.ko from beeing removed
++mv $INITRD_TREE/$LMK/kernel/drivers/block $INITRD_TREE/$LMK/kernel
  rm -Rf $INITRD_TREE/$LMK/kernel/drivers/*
- 
+-
 -debug "creating empty image file for initrd"
 -dd if=/dev/zero of=$INITRDIMG bs=1024 count=$RAM0SIZE >>$DEBUG 2>&1
 -
 -debug "making filesystem"
 -mkfs -t ext2 -F -m 0 -b 1024 -i 1024 $INITRDIMG >>$DEBUG 2>&1
 -tune2fs -i 120m $INITRDIMG >>$DEBUG 2>&1
--
++mv $INITRD_TREE/$LMK/kernel/block $INITRD_TREE/$LMK/kernel/drivers
+ 
  debug "creating empty directory $MOUNTDIR"
  rm -Rf $MOUNTDIR
  mkdir $MOUNTDIR
@@ -401,8 +358,82 @@ diff -Nur linux-live-6.2.4.orig/install linux-live-6.2.4/install
  
  debug "deleting directory $INITRD_TREE"
  rm -Rf $INITRD_TREE
---- linux-live-6.2.9/tools/liblinuxlive.orig	2008-10-28 16:34:59.000000000 +0100
-+++ linux-live-6.2.9/tools/liblinuxlive	2009-03-05 19:25:56.000000000 +0100
+diff -Nur linux-live-6.2.9-orig/initrd/linuxrc linux-live-6.2.9/initrd/linuxrc
+--- linux-live-6.2.9-orig/initrd/linuxrc	2008-11-17 14:37:16.000000000 +0100
++++ linux-live-6.2.9/initrd/linuxrc	2009-03-16 03:41:31.000000000 +0100
+@@ -17,14 +17,18 @@
+ # Syslog will reset printk settings, no need to remember it here anymore.
+ echo "0" >/proc/sys/kernel/printk
+ 
+-# Load essential drivers, like CDROM drivers, aufs/squashfs etc,
+-# use mdev to create /dev/ devices and setup it as a hotplug-handler
+-modprobe_essential_modules
++# modprobe loop and squashfs
++modprobe_module squashfs
++modprobe_module loop
+ 
+ # /usr and some drivers are compressed in initrd 
+ # so it must be mounted from .lzm files
+ mount_initrd_loops
+ 
++# Load essential drivers, like CDROM drivers, aufs/squashfs etc,
++# use mdev to create /dev/ devices and setup it as a hotplug-handler
++modprobe_essential_modules
++
+ # start hotplugging before hw drivers load
+ mdev_start_hotplug
+ 
+@@ -271,18 +275,9 @@
+ 
+ mount -n -o remount,ro aufs .
+ 
+-# We will copy init from the distro to initrd (there should be 2MB free)
+-# This allows us to use the cleanup script during reboot, as init will be
+-# started from memory and not from the union and /union will not be busy.
+-
+-cp -af $INIT /bin
+-if [ $? -eq 0 ]; then
+-   pivot_root . $INITRAMDISK
+-   exec $CHROOT . $INITRAMDISK/bin/init <dev/console >dev/console 2>&1
+-else # If copying fails, start init directly.
+-   pivot_root . $INITRAMDISK
+-   exec $CHROOT . $INIT <dev/console >dev/console 2>&1
+-fi
++# Should do switch_root but not supported by this busybox
++pivot_root . $INITRAMDISK
++exec $CHROOT . $INIT <dev/console >dev/console 2>&1
+ 
+ header "!!ERROR!!"
+ fatal "You are not supposed to be here, something went wrong!"
+diff -Nur linux-live-6.2.9-orig/install linux-live-6.2.9/install
+--- linux-live-6.2.9-orig/install	2007-05-14 18:50:44.000000000 +0200
++++ linux-live-6.2.9/install	2009-03-16 03:41:31.000000000 +0100
+@@ -15,18 +15,10 @@
+ if [ "$N" = "build" ]; then
+    N=install
+ else
+-   . ./.config || exit 1
+-   if [ "$1" ]; then ROOT="$1"; fi
+-fi
++   . /etc/linux-live/config || exit 1
++# You may override some variables by your own config
++   [ -f $HOME/.linux-live/config  ] && . $HOME/.linux-live/config
+ 
+-if [ "$N" != "uninstall" ]; then
+-   mkdir -p $ROOT/usr/bin
+-   mkdir -p $ROOT/usr/lib
+-   ls -1 ./tools | egrep -v "^lib" | while read FILE; do cp ./tools/$FILE $ROOT/usr/bin; done
+-   cat ./tools/liblinuxlive | sed -r 's/^LIVECDNAME=.*/LIVECDNAME="'$LIVECDNAME'"/' > $ROOT/usr/lib/liblinuxlive
+-else
+-   ls -1 ./tools | egrep -v "^lib" | while read FILE; do rm -v $ROOT/usr/bin/$FILE; done
+-   ls -1 ./tools | egrep "^lib" | while read FILE; do rm -v $ROOT/usr/lib/$FILE; done
++   if [ "$1" ]; then ROOT="$1"; fi
+ fi
+ 
+-echo "Linux Live scripts were $N""ed successfuly in $1/"
+diff -Nur linux-live-6.2.9-orig/tools/liblinuxlive linux-live-6.2.9/tools/liblinuxlive
+--- linux-live-6.2.9-orig/tools/liblinuxlive	2008-10-28 16:34:59.000000000 +0100
++++ linux-live-6.2.9/tools/liblinuxlive	2009-03-16 03:41:31.000000000 +0100
 @@ -462,7 +462,7 @@
  {
     debug_log "create_module" "$*"
