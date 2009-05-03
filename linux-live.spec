@@ -33,8 +33,10 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 # do not touch initrd files
 %define		_noautoprov	lib.*\.so.* ld-linux.*\.so.*
-%define		_noautostrip	%{_noautoprov}
+%define		_noautostrip	*
 %define		_noautoreq	%{_noautoprov}
+
+%define		_enable_debug_packages 0
 
 %description
 Linux Live is a set of shell scripts which allows you to create own
