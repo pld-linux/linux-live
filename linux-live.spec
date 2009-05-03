@@ -31,11 +31,10 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_sysconfdir	/etc/%{name}
 %define		__cp	cp --preserve=timestamps
 
-# do not touch initrd files
+# autostrip nothing and disable debug (it is suposed to be noarch)
 %define		_noautoprov	lib.*\.so.* ld-linux.*\.so.*
-%define		_noautostrip	*
 %define		_noautoreq	%{_noautoprov}
-
+%define		_noautostrip	.*
 %define		_enable_debug_packages 0
 
 %description
