@@ -3,12 +3,12 @@
 Summary:	Linux Live scripts
 Summary(pl.UTF-8):	Skrypty Linux Live
 Name:		linux-live
-Version:	6.2.9
+Version:	6.3.0
 Release:	1
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
-# Source0-md5:	ef9c237a23f5a310ba4bbb61e80ccf87
+# Source0-md5:	6dbad307c4a026b6f7c37ce91f67630c
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
