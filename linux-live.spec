@@ -12,6 +12,7 @@ Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
+BuildRequires:	rpmbuild(macros) >= 1.583
 Requires:	busybox
 Requires:	coreutils
 Requires:	e2fsprogs
@@ -31,11 +32,14 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_sysconfdir	/etc/%{name}
 %define		__cp	cp --preserve=timestamps
 
-# autostrip nothing and disable debug (it is suposed to be noarch)
+# autostrip nothing and disable debug (it is supposed to be noarch)
 %define		_noautoprov	lib.*\.so.* ld-linux.*\.so.*
 %define		_noautoreq	%{_noautoprov}
 %define		_noautostrip	.*
 %define		_enable_debug_packages 0
+
+# undefined sym: pthread_sigmask
+%define		skip_post_check_so	libulockmgr.so.1.0.1
 
 %description
 Linux Live is a set of shell scripts which allows you to create own
@@ -82,7 +86,10 @@ install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc} $RPM_BUIL
 ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
 ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
 
-rm -rf $RPM_BUILD_ROOT%{_libexecdir}/initrd/posixovl/usr/src
+%{__rm} -r $RPM_BUILD_ROOT%{_libexecdir}/initrd/posixovl/usr/src
+%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/fuse/usr/lib/libfuse.la
+%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/fuse/usr/lib/libulockmgr.la
+%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/lib/libntfs-3g.la
 
 %clean
 rm -rf $RPM_BUILD_ROOT
