@@ -27,7 +27,7 @@ Suggests:	perl-base
 Suggests:	tar
 Suggests:	wget
 Obsoletes:	linux-live-build < 6.2.4-7
-BuildArch:	noarch
+ExclusiveArch:	%{ix86} %{x8664} arm
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libdir		%{_prefix}/lib
