@@ -1,36 +1,38 @@
-# TODO:
-# - generate initramfs image instead of ext2 (our kernels don't support ext2 anyway)
-Summary:	Linux Live scripts
-Summary(pl.UTF-8):	Skrypty Linux Live
+Summary:	Linux Live Kit
 Name:		linux-live
-Version:	6.3.0
-Release:	1
+Version:	1.8
+Release:	0.1
+Epoch:		1
 License:	GPL
 Group:		Applications/System
-Source0:	ftp://ftp.slax.org/Linux-Live/%{name}-%{version}.tar.gz
-# Source0-md5:	6dbad307c4a026b6f7c37ce91f67630c
+Source0:	https://github.com/Tomas-M/linux-live/archive/v%{version}.tar.gz?/%{name}-%{version}.tgz
+# Source0-md5:	393c52991be3e4d21660e00b6bbf316c
 Source1:	%{name}-build.sh
 Patch0:		%{name}-package.patch
 URL:		http://www.linux-live.org/
 BuildRequires:	rpmbuild(macros) >= 1.583
-Requires:	busybox
 Requires:	coreutils
-Requires:	e2fsprogs
-Requires:	eject
 Requires:	grep
 Requires:	mawk
 Requires:	mkisofs
-Requires:	pci-database
 Requires:	sed
 Requires:	squashfs
+# suggests for rebuidling isolinux
+Suggests:	gcc
+Suggests:	glibc-devel
+Suggests:	gzip
+Suggests:	make
+Suggests:	nasm
+Suggests:	perl-base
+Suggests:	tar
+Suggests:	wget
 Obsoletes:	linux-live-build < 6.2.4-7
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_libdir	%{_prefix}/lib
+%define		_libdir		%{_prefix}/lib
 %define		_libexecdir	%{_libdir}/%{name}
 %define		_sysconfdir	/etc/%{name}
-%define		__cp	cp --preserve=timestamps
 
 # autostrip nothing and disable debug (it is supposed to be noarch)
 %define		_noautoprov	lib.*\.so.* ld-linux.*\.so.*
@@ -42,11 +44,12 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		skip_post_check_so	libulockmgr.so.1.0.1
 
 %description
-Linux Live is a set of shell scripts which allows you to create own
-LiveCD from every Linux distribution. Just install your favourite
-distro, remove all unnecessary files (for example man pages and all
-other files which are not important for you) and then download and run
-these scripts to build your custom Live Linux.
+Linux Live Kit is a set of shell scripts which allows you to create
+your own Live Linux from an already installed Linux distribution. The
+Live system you create will be bootable from CD-ROM or a disk device,
+for example USB Flash Drive, USB Pen Drive, Camera connected to USB
+port, and so on. People use Linux Live Kit to boot Linux from iPod as
+well.
 
 %description -l pl.UTF-8
 Linux Live to zestaw skryptów powłoki pozwalających tworzyć własne
@@ -59,87 +62,60 @@ manuala i wszystkie inne nieistotne dla nas pliki), a następnie
 %setup -q
 %patch0 -p1
 
-rm -rf initrd/kernel-modules/2.6.16
-find . '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
+cd initramfs/static
+./update
+rm -v *-{i486,x86_64}
+cd -
+
+find '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
 
 %install
 rm -rf $RPM_BUILD_ROOT
-# tools for livecd
-install -d $RPM_BUILD_ROOT{%{_libdir},%{_bindir},%{_sbindir}}
+install -d $RPM_BUILD_ROOT{%{_libexecdir},%{_bindir},%{_sbindir}}
+cp -a bootfiles bootinfo.txt build initramfs livekitlib tools $RPM_BUILD_ROOT%{_libexecdir}
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sbindir}/linux-live-build
-%{__cp} -p tools/liblinuxlive $RPM_BUILD_ROOT%{_libdir}
-%{__cp} -a tools/{deb2lzm,dir2lzm,lzm2dir,tgz2lzm} $RPM_BUILD_ROOT%{_bindir}
 
-# tools for building livecd
 install -d $RPM_BUILD_ROOT%{_sysconfdir}
-%{__cp} .config $RPM_BUILD_ROOT%{_sysconfdir}/config
-install -d $RPM_BUILD_ROOT%{_libexecdir}
-%{__cp} -a cd-root $RPM_BUILD_ROOT%{_libexecdir}
-%{__cp} build $RPM_BUILD_ROOT%{_libexecdir}
-%{__cp} install $RPM_BUILD_ROOT%{_libexecdir}
-%{__cp} -a DOC $RPM_BUILD_ROOT%{_libexecdir}
-
-# initrd
-install -d $RPM_BUILD_ROOT%{_libexecdir}/initrd
-install -p -m 644 initrd/{addlocaleslib,cleanup,initrd_create,linuxrc} $RPM_BUILD_ROOT%{_libexecdir}/initrd
-%{__cp} -a initrd/{fuse,ntfs-3g,posixovl,rootfs} $RPM_BUILD_ROOT%{_libexecdir}/initrd
-ln -s %{_libdir}/liblinuxlive $RPM_BUILD_ROOT%{_libexecdir}/initrd
-ln -sf ntfs-3g $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/bin/mount.ntfs-3g
-
-%{__rm} -r $RPM_BUILD_ROOT%{_libexecdir}/initrd/posixovl/usr/src
-%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/fuse/usr/lib/libfuse.la
-%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/fuse/usr/lib/libulockmgr.la
-%{__rm} $RPM_BUILD_ROOT%{_libexecdir}/initrd/ntfs-3g/usr/lib/libntfs-3g.la
+cp -p .config $RPM_BUILD_ROOT%{_sysconfdir}/config
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc DOC/changelog.txt DOC/requirements.txt
+%doc README TODO DOC/*.txt
 %attr(755,root,root) %{_sbindir}/linux-live-build
-%attr(755,root,root) %{_bindir}/deb2lzm
-%attr(755,root,root) %{_bindir}/dir2lzm
-%attr(755,root,root) %{_bindir}/lzm2dir
-%attr(755,root,root) %{_bindir}/tgz2lzm
-%{_libdir}/liblinuxlive
 %dir %{_sysconfdir}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config
 %dir %{_libexecdir}
-%{_libexecdir}/DOC
 %attr(755,root,root) %{_libexecdir}/build
-%attr(755,root,root) %{_libexecdir}/install
-%dir %{_libexecdir}/cd-root
-%{_libexecdir}/cd-root/boot
-%{_libexecdir}/cd-root/linux
-%dir %{_libexecdir}/initrd
-%{_libexecdir}/initrd/liblinuxlive
-%{_libexecdir}/initrd/linuxrc
-%attr(755,root,root) %{_libexecdir}/initrd/addlocaleslib
-%attr(755,root,root) %{_libexecdir}/initrd/cleanup
-%attr(755,root,root) %{_libexecdir}/initrd/initrd_create
-%dir %{_libexecdir}/initrd/fuse
-%dir %{_libexecdir}/initrd/fuse/usr
-%dir %{_libexecdir}/initrd/fuse/usr/bin
-%attr(755,root,root) %{_libexecdir}/initrd/fuse/usr/bin/*
-%dir %{_libexecdir}/initrd/fuse/usr/lib
-%attr(755,root,root) %{_libexecdir}/initrd/fuse/usr/lib/*.so*
-%dir %{_libexecdir}/initrd/ntfs-3g
-%dir %{_libexecdir}/initrd/ntfs-3g/usr
-%dir %{_libexecdir}/initrd/ntfs-3g/usr/bin
-%dir %{_libexecdir}/initrd/ntfs-3g/bin
-%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/bin/*
-%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/bin/*
-%dir %{_libexecdir}/initrd/ntfs-3g/usr/lib
-%attr(755,root,root) %{_libexecdir}/initrd/ntfs-3g/usr/lib/*.so*
-%dir %{_libexecdir}/initrd/posixovl
-%dir %{_libexecdir}/initrd/posixovl/usr
-%dir %{_libexecdir}/initrd/posixovl/usr/bin
-%attr(755,root,root) %{_libexecdir}/initrd/posixovl/usr/bin/*
-%dir %{_libexecdir}/initrd/rootfs
-%dir %{_libexecdir}/initrd/rootfs/bin
-%attr(755,root,root) %{_libexecdir}/initrd/rootfs/bin/*
-%{_libexecdir}/initrd/rootfs/etc
-%dir %{_libexecdir}/initrd/rootfs/lib
-%attr(755,root,root) %{_libexecdir}/initrd/rootfs/lib/*.so*
-%{_libexecdir}/initrd/rootfs/usr
+%{_libexecdir}/livekitlib
+%{_libexecdir}/bootinfo.txt
+
+%dir %{_libexecdir}/bootfiles
+%{_libexecdir}/bootfiles/bootinst.bat
+%{_libexecdir}/bootfiles/bootinst.sh
+%{_libexecdir}/bootfiles/bootlogo.png
+%{_libexecdir}/bootfiles/extlinux.exe
+%{_libexecdir}/bootfiles/isolinux.bin
+%{_libexecdir}/bootfiles/mbr.bin
+%{_libexecdir}/bootfiles/pxelinux.0
+%{_libexecdir}/bootfiles/syslinux.cfg
+%{_libexecdir}/bootfiles/syslinux.com
+%{_libexecdir}/bootfiles/syslinux.exe
+%{_libexecdir}/bootfiles/vesamenu.c32
+
+%dir %{_libexecdir}/initramfs
+%{_libexecdir}/initramfs/cleanup
+%{_libexecdir}/initramfs/init
+%{_libexecdir}/initramfs/initramfs_create
+
+%dir %{_libexecdir}/initramfs/static
+%{_libexecdir}/initramfs/static/busybox
+%{_libexecdir}/initramfs/static/eject
+%{_libexecdir}/initramfs/static/mount.dynfilefs
+%{_libexecdir}/initramfs/static/mount.ntfs-3g
+%{_libexecdir}/initramfs/static/update
+
+%dir %{_libexecdir}/tools
+%attr(755,root,root) %{_libexecdir}/tools/isolinux.bin.update
