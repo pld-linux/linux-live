@@ -1,0 +1,11 @@
+--- linux-live-1.8/.config~	2013-01-04 16:17:07.000000000 +0200
++++ linux-live-1.8/.config	2013-03-25 09:20:51.899864473 +0200
+@@ -7,7 +7,7 @@
+ # Must not contain any spaces.
+ # If you change it, you must run ./tools/isolinux.bin.update script
+ # in order to update isolinux.bin for CD booting.
+-LIVEKITNAME="mylinux"
++LIVEKITNAME="pld"
+ 
+ # Kernel file, will be copied to your Live Kit
+ VMLINUZ=/boot/vmlinuz

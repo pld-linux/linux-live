@@ -10,8 +10,9 @@ Source0:	https://github.com/Tomas-M/linux-live/archive/v%{version}.tar.gz?/%{nam
 Source1:	http://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-4.06.tar.gz
 # Source1-md5:	ab705f8a0be0598770014bd5498b2eb2
 Source2:	%{name}-build.sh
-Patch0:		https://github.com/Tomas-M/linux-live/pull/5.patch
-# Patch0-md5:	603c98f4c516929044bccf0419423586
+Patch0:		pld.patch
+Patch1:		https://github.com/Tomas-M/linux-live/pull/5.patch
+# Patch1-md5:	603c98f4c516929044bccf0419423586
 URL:		http://www.linux-live.org/
 BuildRequires:	nasm
 BuildRequires:	perl-base
@@ -66,6 +67,7 @@ manuala i wszystkie inne nieistotne dla nas pliki), a następnie
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 cd initramfs/static
 ./update
@@ -80,13 +82,15 @@ find '(' -name '*~' -o -name '*.orig' ')' -print0 | xargs -0 -r -l512 rm -f
 # rebuild isolinux to be in /pld/ subdir
 cd tools
 CC="%{__cc}" \
-sh -x ./isolinux.bin.update
+sed -e '/rm/d' ./isolinux.bin.update | sh -x
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_libexecdir},%{_bindir},%{_sbindir}}
 cp -a bootfiles bootinfo.txt build initramfs livekitlib tools $RPM_BUILD_ROOT%{_libexecdir}
 install -p %{SOURCE2} $RPM_BUILD_ROOT%{_sbindir}/linux-live-build
+
+rm -r $RPM_BUILD_ROOT%{_libexecdir}/tools/syslinux-*
 
 install -d $RPM_BUILD_ROOT%{_sysconfdir}
 cp -p .config $RPM_BUILD_ROOT%{_sysconfdir}/config
