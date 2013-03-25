@@ -14,9 +14,11 @@ Patch0:		pld.patch
 Patch1:		https://github.com/Tomas-M/linux-live/pull/5.patch
 # Patch1-md5:	603c98f4c516929044bccf0419423586
 URL:		http://www.linux-live.org/
+BuildRequires:	libuuid-devel
 BuildRequires:	nasm
 BuildRequires:	perl-base
 BuildRequires:	rpmbuild(macros) >= 1.583
+BuildRequires:	upx
 Requires:	coreutils
 Requires:	grep
 Requires:	mawk
