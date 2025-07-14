@@ -68,8 +68,8 @@ manuala i wszystkie inne nieistotne dla nas pliki), a następnie
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
+%patch -P0 -p1
+%patch -P1 -p1
 
 cd initramfs/static
 ./update
